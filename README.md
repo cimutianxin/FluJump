@@ -20,9 +20,12 @@ data/raw/H1～H7_raw.csv 是下载的原始数据
 
 ### 数据处理
 Phase 1: 数据清洗
-Phase 2: CD-HIT 序列聚类
+Phase 2: CD-HIT 序列聚类 99%
 Phase 3: 宿主时间线与 Jump 标签
-Phase 4: 特征工程
+Phase 5: 还原成 isolate，使得每个样本都有99%聚类后的标签
+Phase 6.1: MAFFT 亚型内对齐后整体对齐，得到581长度序列数据集，Borkenhagen baseline
+Phase 6.2：
+
 
 
 ## 方法

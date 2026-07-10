@@ -18,6 +18,9 @@ venv/
 env/
 .env
 
+# Agents (copilot internal)
+.agents/
+
 # IDE
 .idea/
 *.swp
