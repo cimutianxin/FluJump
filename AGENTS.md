@@ -84,22 +84,6 @@ FluJump/
 
 ---
 
-## 设计决策
-
-### Split 策略：不使用 Cluster-stratified Split
-
-**决策**：当前 `isolate_split.csv` 按 **isolate 级别** 随机划分 train/val/test，**不按 cluster 隔离**。同一 cluster 的多个 isolate 可能分散在不同 split 中。
-
-**理由**：本项目的使用场景是 **"给定一条新序列，预测其 interval/jump"** —— 输入是单条 HA 序列，输出是该序列对应的预测值。在这种场景下：
-
-1. **每个 isolate 是一个独立样本**。虽然同一 cluster 的 isolate 共享 CD-HIT 聚类标签，但它们的序列不同（identity ≥ 阈值但非相同），且 `iso_interval_days` 是 isolate 级别独立计算的。
-2. **Cluster 级 split 会破坏数据分布**。37 个 cluster 大小差异极大（最大 465 条，最小 1 条），按 cluster split 会导致 train/val/test 的类别分布极不均衡，小样本类别（如 5yr+ 仅 7 条）可能完全集中在某个 split。
-3. **实践中的评估场景**：给定一条新序列，模型不应知道它属于哪个 cluster（实际部署时没有 cluster 信息），因此 isolate 级别的随机 split 更贴合真实使用方式。
-
-**已知代价**：同一 cluster 的 isolate 序列高度相似，split 间存在一定信息泄漏。这会导致评估指标**略微偏高**，但考虑到任务难度（R²≈0.1），当前指标已足够保守，泄漏影响有限。如果未来指标显著提升（如 R²>0.3），需重新审视此决策。
-
----
-
 ## 其他规则
 
 - Agent 可以阅读 `README.md`，但不能修改 `README.md`。
