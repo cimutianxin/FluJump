@@ -67,6 +67,10 @@ def compute_isolate_interval(collection_date, host_category, first_human_ym, fir
     else:
         days = days_between(collection_date, first_human_ym)
 
+    # 人先于动物：跨物种能力已激活，interval=0（最高危）
+    if days is not None and days < 0:
+        days = 0
+
     cat = cat_interval_year(days) if days is not None else ""
     return days, cat
 
