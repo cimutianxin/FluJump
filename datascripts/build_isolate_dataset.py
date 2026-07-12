@@ -13,6 +13,63 @@ OUT_DIR = Path("data/processed_isolate")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 SUBTYPES = ["H1", "H3", "H5", "H7"]
 
+ANIMAL_HOST_FIELDS = ["first_avian_ym", "first_swine_ym", "first_bovine_ym"]
+
+
+def days_between(ym1, ym2):
+    """两个 YYYY-MM 之间的近似天数差 (ym2 - ym1)"""
+    if not ym1 or not ym2:
+        return None
+    try:
+        y1, m1 = int(ym1[:4]), int(ym1[5:7])
+        y2, m2 = int(ym2[:4]), int(ym2[5:7])
+        return (y2 - y1) * 365 + (m2 - m1) * 30
+    except (ValueError, IndexError):
+        return None
+
+
+def cat_interval_year(days):
+    """天数 → 年分类: negative / <1yr / 1-3yr / 3-5yr / 5yr+"""
+    if days is None:
+        return ""
+    if days < 0:
+        return "negative"
+    years = days / 365.25
+    if years < 1:
+        return "<1yr"
+    elif years < 3:
+        return "1-3yr"
+    elif years < 5:
+        return "3-5yr"
+    return "5yr+"
+
+
+def compute_isolate_interval(collection_date, host_category, first_human_ym, first_avian_ym, first_swine_ym, first_bovine_ym):
+    """
+    计算 isolate 级别的跨物种间隔。
+    - 动物 isolate: collection_date → first_human_ym（距人类首检还有多久）
+    - 人 isolate:   first_animal_ym → collection_date（动物首检后多久感染人）
+    返回 (interval_days: int|None, interval_cat: str)
+    """
+    if not collection_date or collection_date == "-1":
+        return None, ""
+    if not first_human_ym:
+        return None, ""
+
+    # 最早动物宿主时间
+    animal_yms = [ym for ym in [first_avian_ym, first_swine_ym, first_bovine_ym] if ym]
+    if not animal_yms:
+        return None, ""
+    first_animal_ym = min(animal_yms)
+
+    if host_category == "human":
+        days = days_between(first_animal_ym, collection_date)
+    else:
+        days = days_between(collection_date, first_human_ym)
+
+    cat = cat_interval_year(days) if days is not None else ""
+    return days, cat
+
 # 1. 加载 cluster 标签
 print("加载 cluster 标签...")
 cid_label = {}
@@ -57,6 +114,8 @@ OUTPUT_COLS = [
     "label_is_jump", "jump_interval_cat",
     "label_is_jump_human", "jump_interval_human_cat",
     "label_jump_source",
+    # isolate 级 interval（每个 isolate 独立计算）
+    "iso_interval_days", "iso_interval_cat",
     # cluster 级时间
     "first_human_ym", "first_avian_ym", "first_swine_ym", "first_bovine_ym",
 ]
@@ -111,6 +170,19 @@ with open(OUT_DIR / "all_isolates.csv", "w", encoding="utf-8", newline="") as fo
                     "first_swine_ym": lbl.get("first_swine_ym", ""),
                     "first_bovine_ym": lbl.get("first_bovine_ym", ""),
                 }
+
+                # 计算 isolate 级 interval
+                iso_days, iso_cat = compute_isolate_interval(
+                    date_str,
+                    r.get("host_category", ""),
+                    lbl.get("first_human_ym", ""),
+                    lbl.get("first_avian_ym", ""),
+                    lbl.get("first_swine_ym", ""),
+                    lbl.get("first_bovine_ym", ""),
+                )
+                row["iso_interval_days"] = iso_days if iso_days is not None else ""
+                row["iso_interval_cat"] = iso_cat
+
                 writer.writerow(row)
 
                 if lbl.get("label_is_jump") == "1":

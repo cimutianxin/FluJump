@@ -39,17 +39,19 @@ def days_between(ym1, ym2):
 
 
 def cat_interval(days, allow_negative=False):
-    """天数 → 分类: negative / 0-6m / 6-12m / 12m+"""
+    """天数 → 年分类: negative / <1yr / 1-3yr / 3-5yr / 5yr+"""
     if days is None:
         return ""
     if allow_negative and days < 0:
         return "negative"
-    d = abs(days)
-    if d <= 183:
-        return "0-6m"
-    elif d <= 365:
-        return "6-12m"
-    return "12m+"
+    years = abs(days) / 365.25
+    if years < 1:
+        return "<1yr"
+    elif years < 3:
+        return "1-3yr"
+    elif years < 5:
+        return "3-5yr"
+    return "5yr+"
 
 
 def process_subtype(subtype):
@@ -127,14 +129,16 @@ def process_subtype(subtype):
         # label_is_jump: 任意 2 宿主
         label_is_jump = 1 if len(non_unk) >= 2 else 0
 
-        # jump_interval_cat: 最早 animal → human (只取正)
+        # jump_interval_cat: 跨物种最早→最晚宿主的时间跨度（绝对值，非方向性）
+        # 修复: 原逻辑仅取 "animal→human 正值"，导致 H1+H3 的 human|swine 全为空
+        # 新逻辑: 对所有 ≥2 宿主的 jump cluster 计算时间跨度
         jump_interval_cat = ""
-        if label_is_jump and host_ym.get("human"):
-            animals = [(h, host_ym[h]) for h in non_unk if h != "human"]
-            if animals:
-                animals.sort(key=lambda x: x[1])
-                d = days_between(animals[0][1], host_ym["human"])
-                if d is not None and d > 0:
+        if label_is_jump:
+            all_yms = [host_ym[h] for h in non_unk if host_ym[h]]
+            if len(all_yms) >= 2:
+                all_yms.sort()
+                d = days_between(all_yms[0], all_yms[-1])
+                if d is not None and d >= 0:
                     jump_interval_cat = cat_interval(d)
 
         # label_is_jump_human: 含 human

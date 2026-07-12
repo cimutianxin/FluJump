@@ -17,6 +17,74 @@
 4. 只提取对话中的实质信息，不要复制闲聊或无意义轮次。
 5. 创建后告知用户文件路径，并询问是否需要修改内容。
 
-Agent可以阅读README.md，但不能修改README.md
+---
 
-mainpipeline中存储主流程代码，如果有更好性能的方法，则备份之前的主流程到
+## 实验日志
+
+**每次实验完成后必须写实验日志。** 日志存放于 `experiments/` 目录，文件名格式：
+
+```
+experiments/MM-DD-HH_<简短描述>.md
+```
+
+### 日志内容模板
+
+```
+# 实验：<简短描述>
+
+- **日期**：MM-DD-HH
+- **目的**：本次实验要验证什么
+
+## 方法
+- 模型/参数/数据配置的变更要点
+
+## 结果
+- 关键指标（必须有数值）
+- 与 baseline 对比（如有）
+
+## 结论
+- 是否达到预期
+- 下一步行动（继续 / 调整 / 放弃）
+```
+
+### 日志要求
+
+| 要求 | 说明 |
+|------|------|
+| 每次实验必写 | 无论结果好坏，哪怕只跑了几行代码 |
+| 文件名带日期 | 便于按时间排序和回顾 |
+| 关键指标必须有数值 | 不能只写"效果好" |
+| 结论明确标注下一步行动 | 继续 / 调整 / 放弃 |
+
+---
+
+## 项目结构
+
+```
+FluJump/
+├── AGENTS.md                       # 本文件（AI Agent 行为规范）
+├── README.md                       # 项目说明（Agent 只读，禁止修改）
+├── data/                           # 数据目录
+│   ├── raw/                        # 原始数据（禁止修改）
+│   ├── processed/                  # 清洗后数据
+│   ├── processed_isolate/          # isolate 处理数据
+│   ├── processed_isolate_MAFFT/    # MAFFT 对齐数据
+│   ├── splits/                     # 训练/测试集划分
+│   ├── dataset_borkenhagen/        # Borkenhagen 数据集
+│   └── dataset_borkenhagen_raw/    # Borkenhagen 原始数据
+├── datascripts/                    # 数据处理脚本
+├── mainpipeline/                   # 主流程代码（性能优化时先备份旧版本）
+├── expnotes/                       # 对话笔记（MM-DD-HH-主题.md）
+├── experiments/                    # 实验日志（MM-DD-HH_描述.md）
+├── Alberts/                        # Alberts 2024 复现
+├── Borkenhagen/                    # Borkenhagen 2024 复现（CNN baseline）
+├── Chen/                           # Chen 相关
+└── ESM_clf/                        # ESM 分类器实验
+```
+
+---
+
+## 其他规则
+
+- Agent 可以阅读 `README.md`，但不能修改 `README.md`。
+- `mainpipeline/` 中存储主流程代码，如果有更好性能的方法，则备份之前的主流程到 `mainpipeline/backup/` 后再替换。

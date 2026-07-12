@@ -1,0 +1,41 @@
+{
+  "n_total": 729,
+  "n_train": 489,
+  "n_val": 113,
+  "n_test": 97,
+  "subtype_dist": {
+    "H1": 572,
+    "H3": 157
+  },
+  "cluster_count": 37,
+  "reg_mean": NaN,
+  "reg_std": NaN,
+  "class_dist": {
+    "<1yr": 433,
+    "1-3yr": 177,
+    "3-5yr": 112,
+    "5yr+": 7
+  },
+  "subtypes": [
+    "H1",
+    "H3"
+  ],
+  "emb_types": [
+    "L1",
+    "L3",
+    "L1L3"
+  ],
+  "interval_bins": [
+    0,
+    365,
+    1095,
+    1825,
+    999999
+  ],
+  "interval_labels": [
+    "<1yr",
+    "1-3yr",
+    "3-5yr",
+    "5yr+"
+  ]
+}
