@@ -97,12 +97,15 @@ with open(DATA / "all_subtypes_simplified.csv") as f:
         }
 
 # 2. 加载 accession → cluster 映射
+# 注意：同一 accession 可出现在多个亚型的 tsv 中（260+ 个跨亚型重复），
+# 必须用 (subtype, accession) 做 key，否则后处理的亚型会覆盖先处理的，
+# 导致 isolate 继承错误亚型的 cluster 标签（2026-08-02 修复）
 print("加载 cluster 映射...")
 acc2cid = {}
 for st in SUBTYPES:
     with open(DATA / f"{st}_clusters.tsv") as f:
         for r in csv.DictReader(f, delimiter="\t"):
-            acc2cid[r["accession"]] = (st, r["cluster_id"])
+            acc2cid[(st, r["accession"])] = (st, r["cluster_id"])
 
 # 3. 生成 isolate 级别数据
 print("生成 isolate 数据集...")
@@ -133,7 +136,7 @@ with open(OUT_DIR / "all_isolates.csv", "w", encoding="utf-8", newline="") as fo
         with open(DATA / f"{st}_clean.csv") as fin:
             for r in csv.DictReader(fin):
                 total += 1
-                key = acc2cid.get(r["accession"])
+                key = acc2cid.get((st, r["accession"]))
                 if not key:
                     continue
                 lbl = cid_label.get(key, {})

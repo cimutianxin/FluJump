@@ -11,40 +11,25 @@ DATA = Path("data/processed_isolate_MAFFT")
 ISOLATE_DIR = Path("data/processed_isolate")
 
 # ── 解析对齐 ──
+# all_aligned_merged.faa 的 header 是裸 accession；跨亚型重复 accession 的
+# 序列已验证一致，因此 accession → 对齐序列映射无歧义
 print("解析 MAFFT 对齐...")
 aligned = {}
-ref_aligned = ""
-with open(DATA / "all_aligned.fasta") as f:
+with open(DATA / "all_aligned_merged.faa") as f:
     seq_id = None; seq_chars = []
     for line in f:
         line = line.strip()
         if line.startswith(">"):
             if seq_id:
-                s = "".join(seq_chars)
-                if seq_id.startswith("H3_ref"):
-                    ref_aligned = s
-                else:
-                    aligned[seq_id] = s
+                aligned[seq_id] = "".join(seq_chars)
             seq_id = line[1:]
             seq_chars = []
         else:
             seq_chars.append(line)
-    if seq_id and not seq_id.startswith("H3_ref"):
+    if seq_id:
         aligned[seq_id] = "".join(seq_chars)
 
-aligned_len = len(ref_aligned)
-print(f"  对齐后长度: {aligned_len}")
 print(f"  对齐序列数: {len(aligned)}")
-print(f"  H3 参考 gap 数: {ref_aligned.count('-')}")
-
-# H3 参考中非 gap 位置 → 原始 H3 位置 (1-based)
-h3_numbering = {}
-h3_pos = 0
-for i, aa in enumerate(ref_aligned):
-    if aa != "-":
-        h3_pos += 1
-        h3_numbering[i] = (h3_pos, aa)
-print(f"  H3 参考非 gap 位置: {h3_pos}")
 
 # ── 生成数据集 ──
 print("\n生成 aligned 数据集...")
@@ -63,6 +48,7 @@ OUTPUT = [
     "label_is_jump_human", "jump_interval_human_cat",
     "label_jump_source",
     "first_human_ym", "first_avian_ym", "first_swine_ym", "first_bovine_ym",
+    "iso_interval_days", "iso_interval_cat",
 ]
 
 matched = 0
@@ -70,8 +56,7 @@ with open(DATA / "all_isolates_aligned.csv", "w", newline="") as fout:
     w = csv.DictWriter(fout, fieldnames=OUTPUT)
     w.writeheader()
     for r in isolates:
-        key = f'{r["accession"]}|{r["subtype"]}|{r["host_category"]}'
-        ali = aligned.get(key, "")
+        ali = aligned.get(r["accession"], "")
         if ali:
             matched += 1
             ali_len = len(ali)
@@ -102,6 +87,8 @@ with open(DATA / "all_isolates_aligned.csv", "w", newline="") as fout:
                 "first_avian_ym": r["first_avian_ym"],
                 "first_swine_ym": r["first_swine_ym"],
                 "first_bovine_ym": r["first_bovine_ym"],
+                "iso_interval_days": r["iso_interval_days"],
+                "iso_interval_cat": r["iso_interval_cat"],
             })
 
 print(f"  匹配: {matched}/{len(isolates)}")

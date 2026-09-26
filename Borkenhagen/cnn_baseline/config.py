@@ -10,7 +10,7 @@ SPLIT_CSV = Path("data/splits/isolate_split.csv")
 OUTPUT_DIR = Path("Borkenhagen/cnn_baseline/output")
 MODEL_DIR = OUTPUT_DIR / "models"
 
-ALIGNED_LENGTH = 581
+ALIGNED_LENGTH = 1039  # 08-02 重建对齐（all_aligned_merged.faa）后全量等长 1039；旧对齐为 581
 N_AMINO_ACIDS = 21
 AA_VOCAB = "ACDEFGHIKLMNPQRSTVWY-"
 AA_TO_IDX = {aa: i for i, aa in enumerate(AA_VOCAB)}

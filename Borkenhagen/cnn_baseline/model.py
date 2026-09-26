@@ -3,13 +3,14 @@
 import torch
 import torch.nn as nn
 
-from config import CONV_FILTERS, CONV_KERNEL, POOL_SIZE, POOL_STRIDE, DENSE_UNITS, DROPOUT, N_AMINO_ACIDS
+from config import (CONV_FILTERS, CONV_KERNEL, POOL_SIZE, POOL_STRIDE, DENSE_UNITS,
+                    DROPOUT, N_AMINO_ACIDS, ALIGNED_LENGTH)
 
 
 class BorkenhagenCNN(nn.Module):
     """5 层 Conv1D + MaxPool + BatchNorm → Flatten → Dense → Dropout → Sigmoid"""
 
-    def __init__(self, input_channels=N_AMINO_ACIDS, input_length=581):
+    def __init__(self, input_channels=N_AMINO_ACIDS, input_length=ALIGNED_LENGTH):
         super().__init__()
 
         filters = CONV_FILTERS  # [32, 64, 128, 256, 512]
@@ -60,7 +61,7 @@ class BorkenhagenCNN(nn.Module):
 
     def forward(self, x):
         """
-        x: (batch, 21, 581)
+        x: (batch, 21, ALIGNED_LENGTH)
         """
         for conv, pool, bn in zip(self.conv_blocks, self.pools, self.batch_norms):
             x = conv(x)   # Conv1D → ReLU
@@ -95,7 +96,7 @@ def build_model(device="cuda"):
 
 if __name__ == "__main__":
     model = build_model("cpu")
-    x = torch.randn(4, 21, 581)
+    x = torch.randn(4, 21, ALIGNED_LENGTH)
     y = model(x)
     print(f"Input:  {x.shape}")
     print(f"Output: {y.shape}")  # (4, 1)

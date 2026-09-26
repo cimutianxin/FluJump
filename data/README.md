@@ -1,6 +1,6 @@
 # FluJump 数据目录说明
 
-> 最后更新: 2026-07-10
+> 最后更新: 2026-08-02
 
 ---
 
@@ -85,7 +85,7 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 | `first_{host}_ym` | 各宿主最早检出时间 (YYYY-MM) |
 | `host_categories` | cluster 内出现的宿主列表 |
 | `label_is_jump` | 任意 ≥2 宿主 (75, 3.2%) |
-| `jump_interval_cat` | 最早 animal → human 年间隔: `<1yr`/`1-3yr`/`3-5yr`/`5yr+` |
+| `jump_interval_cat` | 所有宿主最早→最晚时间跨度（07-12 修复，非方向性）: `<1yr`(47)/`1-3yr`(20)/`3-5yr`(6)/`5yr+`(2) |
 | `label_is_jump_human` | 含 human + ≥1 动物 (48, 2.0%) |
 | `jump_interval_human_cat` | 同上，允许 negative |
 | `label_jump_source` | 来源宿主: avian/swine/bovine |
@@ -100,9 +100,9 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 
 | 文件 | 行数 | 列数 | 说明 |
 |------|:---:|:---:|------|
-| `all_isolates.csv` | 11,513 | 27 | **全量**（含 `host_category=unknown`），不含 2026 年 |
-| `all_isolates_clean.csv` | 11,060 | 27 | **训练主数据集**，去掉 unknown 宿主，不含 2026 年 |
-| `2026_isolates_clean.csv` | 201 | 27 | 🆕 2026 年独有数据（外部验证/前瞻测试） |
+| `all_isolates.csv` | 11,714 | 27 | **全量**（含 `host_category=unknown` 与 2026 年） |
+| `all_isolates_clean.csv` | 11,060 | 27 | **训练主数据集**，去掉 unknown 宿主 + 排除 2026 年；行序 == `isolate_split.csv` == embedding 行序 |
+| `2026_isolates_clean.csv` | 201 | 27 | 2026 年独有数据（外部验证/前瞻测试） |
 
 **27 列**:
 
@@ -114,27 +114,31 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 | 时间 | `collection_year`, `collection_month`, `collection_date` | YYYY-MM |
 | 地理 | `geo_location`, `country`, `isolation_source` | — |
 | Cluster 标签 | `cluster_hosts` | cluster 内宿主列表 |
-| | `label_is_jump` | 任意跨物种 (1,498 条) |
+| | `label_is_jump` | 任意跨物种 (1,382 条) |
 | | `jump_interval_cat` | cluster 级年分箱 |
-| | `label_is_jump_human` | 跨物种到人 (1,216 条) |
+| | `label_is_jump_human` | 跨物种到人 (1,209 条) |
 | | `jump_interval_human_cat` | cluster 级年分箱 |
 | | `label_jump_source` | 来源宿主 |
 | **Isolate 级 interval** | **`iso_interval_days`** | 🆕 每个 isolate 独立计算的连续天数 |
 | | **`iso_interval_cat`** | 🆕 每个 isolate 独立计算的年分箱 |
 | Cluster 时间 | `first_human_ym`, `first_avian_ym`, `first_swine_ym`, `first_bovine_ym` | 各宿主最早检出 |
 
-**iso_interval_cat 分布**（`label_is_jump_human=1` 的 1,216 条）:
+**iso_interval_cat 分布**（`label_is_jump_human=1` 的 1,209 条）:
 
 | 分类 | 数量 | 含义 |
 |------|:---:|------|
-| `<1yr` | 276 | 1 年内跨种 |
+| `<1yr` | 1,033 | 1 年内跨种（含负值 clamp→0：人检出早于动物的 764 条，见下） |
 | `1-3yr` | 91 | 1–3 年 |
 | `3-5yr` | 60 | 3–5 年 |
 | `5yr+` | 7 | 5 年以上 |
-| `negative` | 764 | 人检出早于动物（监测偏差） |
 | (空) | 18 | 日期缺失 |
 
-**生成脚本**: `datascripts/build_isolate_dataset.py`
+> 注意：`iso_interval_days` 在 `build_isolate_dataset.py` 中将负值 clamp 为 0
+> （语义：人先于动物检出 = 跨物种能力已激活 = 最高危），因此 `iso_interval_cat`
+> 不再有 `negative` 类。未 clamp 的有符号天数可由
+> `ESM_clf/interval_exp/interval_data.py` 从现有列重算恢复。
+
+**生成脚本**: `datascripts/build_isolate_dataset.py`（全量）+ `datascripts/rebuild_isolate_tables.py`（clean/2026 分离 + 行序对齐 split）
 
 ---
 
@@ -144,13 +148,13 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 
 | 文件 | 行数 | 列数 | 说明 |
 |------|:---:|:---:|------|
-| `all_isolates_aligned.csv` | 11,060 | 29 | **MAFFT 对齐主数据集**，不含 2026 |
-| `2026_isolates_aligned.csv` | 201 | 29 | 🆕 2026 年对齐数据 |
+| `all_isolates_aligned.csv` | 11,060 | 29 | **MAFFT 对齐主数据集**，不含 2026；行序 == `isolate_split.csv` |
+| `2026_isolates_aligned.csv` | 201 | 29 | 2026 年对齐数据 |
 | `H1_aligned.faa` | 4,069 seqs | — | H1 亚型内对齐 |
 | `H3_aligned.faa` | 4,597 seqs | — | H3 亚型内对齐 |
 | `H5_aligned.faa` | 1,757 seqs | — | H5 亚型内对齐 |
 | `H7_aligned.faa` | 838 seqs | — | H7 亚型内对齐 |
-| `all_aligned_merged.faa` | 11,261 seqs | — | 合并对齐 FASTA |
+| `all_aligned_merged.faa` | 11,261 seqs | — | 合并对齐 FASTA（含 2026，header 为裸 accession） |
 
 **29 列** = 27 列（同 `all_isolates_clean.csv`）+ 对齐专用列:
 
@@ -161,7 +165,7 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 | `gap_count` | gap 数量 |
 | `gap_ratio` | gap 比例 |
 
-**生成脚本**: `datascripts/build_aligned_dataset.py`
+**生成脚本**: `datascripts/rebuild_isolate_tables.py`（或修复后的 `datascripts/build_aligned_dataset.py`，读 `all_aligned_merged.faa`）
 
 ---
 
@@ -169,12 +173,14 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 
 | 文件 | 说明 |
 |------|------|
-| `cluster_split.json` | Cluster 级划分: `train_clusters`, `val_clusters`, `test_clusters`, `h5_holdout_clusters`, `h7_holdout_clusters` |
-| `isolate_split.csv` | Isolate 级划分 (11,261 行): train=6,066 / val=1,300 / test=1,300 / h5_holdout=1,757 / h7_holdout=838 |
+| `isolate_split.csv` | Isolate 级划分 (11,060 行): train=5,933 / val=1,267 / test=1,275 / h5_holdout=1,747 / h7_holdout=838；行序 == clean/aligned/embedding |
+| `cluster_split.json` | ⚠️ **已过时**（07-10 旧版，与 isolate_split.csv 不一致，且 cluster_id 各亚型内从 0 重启、跨亚型有歧义）。请使用 `isolate_split.csv` |
+| `h5h7_valtest/` | H5/H7 内部 5:5 val/test 切分（target-val 层选择协议）：`cluster_seed{42..46}.csv`（cluster 整体归入 val/test，主切分）+ `isolate_random_seed{42..46}.csv`（按行随机，泄露对比臂）。列：accession, subtype, cluster_id, split ∈ {h5_val, h5_test, h7_val, h7_test}；每文件 2,585 行（仅 H5/H7） |
+| `interval_h1357_cluster_split.csv` | interval 3 类任务专用（1,191 行）：H1357 全体 jump=1 且 interval 有效的 isolate，**cluster 级 70/15/15**（无 cluster 跨 split；随机搜索均衡划分，seed=42）。train=834 / val=172 / test=185。配套摘要 `interval_h1357_cluster_split.json` |
 
-**划分策略**: H5/H7 整体 holdout（亚型外推测试），H1/H3 按 cluster 7:1.5:1.5 划分。
+**划分策略**: H5/H7 整体 holdout（亚型外推测试），H1/H3 按 cluster 7:1.5:1.5 划分。`h5h7_valtest/` 在 holdout 内部再切 val（选层）/ test（只评一次），使用时经 isolate_split.csv 的 (accession, subtype) 映射回 embedding 行号。
 
-**生成脚本**: `datascripts/build_splits.py`
+**生成脚本**: `datascripts/build_splits.py`；`datascripts/build_h5h7_valtest_splits.py`（h5h7_valtest/）；`datascripts/build_interval_h1357_cluster_split.py`（interval_h1357_cluster_split.csv）
 
 ---
 
@@ -217,11 +223,11 @@ processed/{H1,H3,H5,H7}_clusters.tsv + _consensus.fasta (2,362 clusters)
   ↓ build_jump_labels.py
 processed/all_subtypes_simplified.csv (2,362 clusters, 20 列)
   ↓ build_isolate_dataset.py
-processed_isolate/all_isolates.csv (11,714 → 11,513 不含 2026)
-  ↓ 过滤 host=unknown + 分离 2026
+processed_isolate/all_isolates.csv (11,714 全量，含 unknown + 2026)
+  ↓ rebuild_isolate_tables.py（过滤 host=unknown + 分离 2026 + 行序对齐 split）
 processed_isolate/all_isolates_clean.csv (11,060, 训练用)
 processed_isolate/2026_isolates_clean.csv (201, 前瞻验证)
-  ↓ MAFFT 对齐 + build_aligned_dataset.py
+  ↓ rebuild_isolate_tables.py / build_aligned_dataset.py（查 all_aligned_merged.faa，不重跑 MAFFT）
 processed_isolate_MAFFT/all_isolates_aligned.csv (11,060 × 29 列)
 processed_isolate_MAFFT/2026_isolates_aligned.csv (201 × 29 列)
 ```

@@ -1,0 +1,92 @@
+{
+  "sign_test": {
+    "H10": {
+      "n_layers_below_0.5": 24,
+      "n_layers": 31,
+      "p_two_sided": 0.003326892852783203
+    },
+    "H4": {
+      "n_layers_below_0.5": 3,
+      "n_layers": 31,
+      "p_two_sided": 4.649162292480469e-06
+    }
+  },
+  "mammalian_subset": {
+    "label_is_jump": {
+      "17": {
+        "n_pos_clusters_mammal": 4,
+        "cluster_auc": 0.5827922077922079,
+        "cluster_auc_flipped": 0.4172077922077922,
+        "ref_all_pos_cluster_auc": 0.4635364635364636
+      },
+      "28": {
+        "n_pos_clusters_mammal": 4,
+        "cluster_auc": 0.4569805194805195,
+        "cluster_auc_flipped": 0.5430194805194806,
+        "ref_all_pos_cluster_auc": 0.468031968031968
+      }
+    },
+    "label_is_jump_human": {
+      "13": {
+        "n_pos_clusters_mammal": 2,
+        "cluster_auc": 0.2115987460815047,
+        "cluster_auc_flipped": 0.7884012539184954,
+        "ref_all_pos_cluster_auc": 0.2115987460815047
+      },
+      "28": {
+        "n_pos_clusters_mammal": 2,
+        "cluster_auc": 0.5893416927899686,
+        "cluster_auc_flipped": 0.4106583072100313,
+        "ref_all_pos_cluster_auc": 0.5893416927899686
+      }
+    }
+  },
+  "human_cluster_ranks": {
+    "H10_197": {
+      "event": "H10N8 江西 2013",
+      "label_is_jump_L17": {
+        "rank_raw": 26,
+        "rank_flipped": 296,
+        "n_clusters": 321
+      },
+      "label_is_jump_L28": {
+        "rank_raw": 154,
+        "rank_flipped": 168,
+        "n_clusters": 321
+      },
+      "label_is_jump_human_L13": {
+        "rank_raw": 313,
+        "rank_flipped": 9,
+        "n_clusters": 321
+      },
+      "label_is_jump_human_L28": {
+        "rank_raw": 206,
+        "rank_flipped": 116,
+        "n_clusters": 321
+      }
+    },
+    "H10_22": {
+      "event": "H10N3 江苏 2021",
+      "label_is_jump_L17": {
+        "rank_raw": 141,
+        "rank_flipped": 181,
+        "n_clusters": 321
+      },
+      "label_is_jump_L28": {
+        "rank_raw": 204,
+        "rank_flipped": 118,
+        "n_clusters": 321
+      },
+      "label_is_jump_human_L13": {
+        "rank_raw": 193,
+        "rank_flipped": 129,
+        "n_clusters": 321
+      },
+      "label_is_jump_human_L28": {
+        "rank_raw": 59,
+        "rank_flipped": 263,
+        "n_clusters": 321
+      }
+    }
+  }
+}

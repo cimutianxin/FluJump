@@ -90,11 +90,14 @@ def parse_collection_date(raw: str | None):
 # ══════════════════════════════════════════════════════════
 
 # 注意：顺序重要 — 更具体的先匹配
+# 09-19：匹配改为 \b 词边界（允许复数 s），防止裸子串误伤
+# （cat→furcata/flycatcher、pig→pigeon、cow→Moscow 等，见 clean_data.py）
 HOST_RULES = [
     (["homo sapiens", "human", "homo", "patient"], "human"),
     (["chicken", "duck", "goose", "quail", "turkey", "mallard",
       "pheasant", "pigeon", "poultry", "wild bird", "teal",
-      "gull", "shorebird", "swan", "fowl", "avian"], "avian"),
+      "gull", "shorebird", "swan", "fowl", "avian",
+      "waterbird", "waterfowl", "bluebird", "flycatcher", "guineafowl"], "avian"),
     (["swine", "pig", "porcine", "hog"], "swine"),
     (["equine", "horse"], "equine"),
     (["canine", "dog"], "canine"),
@@ -106,15 +109,18 @@ HOST_RULES = [
     (["environment", "water", "air", "sewage"], "environmental"),
 ]
 
+_HOST_RULES_C = [([re.compile(r'\b' + re.escape(kw) + r's?\b') for kw in kws], cat)
+                 for kws, cat in HOST_RULES]
+
 
 def infer_host_category(host_species: str | None) -> str:
     """从 host_species 字符串推断 host_category。"""
     if not host_species:
         return "unknown"
     hs = host_species.lower()
-    for keywords, category in HOST_RULES:
-        for kw in keywords:
-            if kw in hs:
+    for patterns, category in _HOST_RULES_C:
+        for pat in patterns:
+            if pat.search(hs):
                 return category
     return "unknown"
 

@@ -39,7 +39,8 @@ HOST_RULES = [
     (["homo sapiens", "human", "homo", "patient"], "human"),
     (["chicken", "duck", "goose", "quail", "turkey", "mallard",
       "pheasant", "pigeon", "poultry", "wild bird", "teal",
-      "gull", "shorebird", "swan", "fowl"], "avian"),
+      "gull", "shorebird", "swan", "fowl",
+      "waterbird", "waterfowl", "bluebird", "flycatcher", "guineafowl"], "avian"),
     (["swine", "pig", "porcine", "hog"], "swine"),
     (["equine", "horse"], "equine"),
     (["canine", "dog"], "canine"),
@@ -52,7 +53,8 @@ HOST_RULES = [
 ]
 
 GENUS_RULES = [
-    (["anas", "gallus", "meleagris", "coturnix", "larus", "calidris"], "avian"),
+    (["anas", "gallus", "meleagris", "coturnix", "larus", "calidris",
+      "tyto", "cairina"], "avian"),
     (["sus"], "swine"),
     (["homo"], "human"),
     (["canis"], "canine"),
@@ -63,6 +65,9 @@ GENUS_RULES = [
     (["phoca", "tursiops", "balaenoptera"], "marine_mammal"),
     (["mus", "rattus", "myotis", "pteropus"], "other_mammal"),
 ]
+
+_HOST_RULES_C = [([re.compile(r'\b' + re.escape(kw) + r's?\b') for kw in kws], cat)
+                 for kws, cat in HOST_RULES]
 
 
 def _get(q, key):
@@ -76,9 +81,9 @@ def infer_host(host_species, strain_name):
     hs = host_species.lower()
     if "synthetic" in hs:
         return "unknown"
-    for kws, cat in HOST_RULES:
-        for kw in kws:
-            if kw in hs:
+    for pats, cat in _HOST_RULES_C:
+        for p in pats:
+            if p.search(hs):
                 return cat
     for genera, cat in GENUS_RULES:
         for g in genera:
@@ -94,7 +99,7 @@ def infer_host(host_species, strain_name):
             (r"/human/|/homo /|/patient/", "human"),
             (r"/equine/|/horse/", "equine"),
             (r"/canine/|/dog/", "canine"),
-            (r"/feline/|/cat/", "feline"),
+            (r"/feline/|/cats?/", "feline"),
         ]
         for pat, cat in patterns:
             if re.search(pat, sn):

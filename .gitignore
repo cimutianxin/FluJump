@@ -37,3 +37,12 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Binary artifacts (embeddings / model weights，体积过大不上传)
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.safetensors

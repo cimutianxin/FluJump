@@ -21,6 +21,12 @@ GAP_TOKEN_ID = 30  # ESM-2 中 '-' 的 token id（已验证）
 df = pd.read_csv(DATA_CSV)
 print(f"总 isolates: {len(df)}")
 
+# 防呆（2026-08-02）：同 extract_embeddings.py，强制校验行序与 split 逐行一致
+_sp = pd.read_csv(SPLIT_CSV, dtype=str)
+assert len(df) == len(_sp), f"DATA_CSV 行数 {len(df)} != split 行数 {len(_sp)}"
+assert (df["accession"].values == _sp["accession"].values).all(), "DATA_CSV 行序与 split 不一致"
+assert (df["subtype"].values == _sp["subtype"].values).all(), "DATA_CSV subtype 行序与 split 不一致"
+
 # 使用对齐序列
 seqs = df["aligned_ha_seq"].tolist()
 print(f"对齐序列长度: {len(seqs[0])}")

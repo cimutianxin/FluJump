@@ -20,13 +20,15 @@ def predict_ds(model, ds, device, bs=256):
     for batch in loader:
         x = batch[0].to(device)
         logits = model(x).squeeze(-1)
-        preds.extend(torch.sigmoid(logits).cpu().numpy())
+        # AUC/排序必须用 raw logits：float32 sigmoid 在 |logit|>88 饱和，
+        # 并列秩会把 AUC 拉向 0.5（jump_human H5 曾被低估 0.549 vs 真值 0.702）
+        preds.extend(logits.cpu().numpy())
         labels.extend(batch[1].numpy())
     return np.array(preds), np.array(labels)
 
 
 def metrics(preds, labels):
-    b = (preds >= 0.5).astype(int)
+    b = (preds >= 0.0).astype(int)  # logit>=0 ⇔ p>=0.5
     return {
         "auc": roc_auc_score(labels, preds) if len(np.unique(labels)) > 1 else None,
         "acc": accuracy_score(labels, b),

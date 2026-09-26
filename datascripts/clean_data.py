@@ -22,12 +22,14 @@ PDB_PATTERN = re.compile(r"^[0-9A-Z]{4}_[A-Z]$")
 
 # ── 改进的 host_category 推断 ─────────────────────────────
 
-# 英文关键词
+# 英文关键词（匹配用 \b 词边界，防止 cat/pig/cow/air/water 等裸子串误伤
+# furcata / flycatcher / pigeon / Moscow / Cairina / shearwater 等——09-19 审计）
 ENGLISH_RULES = [
     (["homo sapiens", "human", "homo", "patient"], "human"),
     (["chicken", "duck", "goose", "quail", "turkey", "mallard",
       "pheasant", "pigeon", "poultry", "wild bird", "teal",
-      "gull", "shorebird", "swan", "fowl"], "avian"),
+      "gull", "shorebird", "swan", "fowl",
+      "waterbird", "waterfowl", "bluebird", "flycatcher", "guineafowl"], "avian"),
     (["swine", "pig", "porcine", "hog"], "swine"),
     (["equine", "horse"], "equine"),
     (["canine", "dog"], "canine"),
@@ -47,7 +49,8 @@ GENUS_RULES = [
       "larus", "sterna", "charadrius", "calidris", "tringa", "arenaria",
       "phalacrocorax", "ardea", "egretta", "pelecanus", "phoenicopterus",
       "accipiter", "buteo", "falco", "aquila", "struthio", "passer",
-      "taeniopygia", "corvus", "pica", "sturnus", "turdus"], "avian"),
+      "taeniopygia", "corvus", "pica", "sturnus", "turdus", "tyto",
+      "cairina"], "avian"),
     (["sus", "porcus"], "swine"),
     (["homo"], "human"),
     (["canis", "lupus"], "canine"),
@@ -66,17 +69,45 @@ STRAIN_HOST_PATTERNS = [
     (r"/swine/|/pig/|/porcine/", "swine"),
     (r"/duck/|/chicken/|/goose/|/quail/|/turkey/|/mallard/|/pheasant/"
      r"|/pigeon/|/poultry/|/teal/|/gull/|/shorebird/|/swan/|/fowl/"
-     r"|/anas /|/calidris /|/avian/", "avian"),
+     r"|/anas /|/calidris /|/avian/|/bluebird/", "avian"),
     (r"/human/|/homo /|/patient/", "human"),
     (r"/canine/|/dog/", "canine"),
     (r"/equine/|/horse/", "equine"),
     (r"/bovine/|/cattle/|/cow/", "bovine"),
-    (r"/feline/|/cat/", "feline"),
+    (r"/feline/|/cats?/", "feline"),
     (r"/mink/|/ferret/", "mustelid"),
     (r"/seal/|/whale/|/marine/", "marine_mammal"),
     (r"/bat/|/mouse/|/rodent/", "other_mammal"),
     (r"/environment/|/water/|/sewage/|/air/", "environmental"),
 ]
+
+# host_species 垃圾值：元数据串位（"Influenza A virus (A/...)"）或字面占位符，
+# 不可直接用于推断，且旧类别视为不可信（09-19 审计）；
+# 串位值内嵌真实株名 "(A/mallard duck/...)"，提取后再走正常推断
+GARBAGE_SPECIES_PREFIX = "influenza a virus"
+GARBAGE_SPECIES_EXACT = {"environment", "environmental"}
+
+
+def _extract_embedded_strain(hs_lower: str) -> str:
+    """从串位 host_species 提取内嵌株名 "(A/mallard duck/PA/...)" → 'a/mallard duck/...'"""
+    m = re.search(r"\((a/[^)]+)\)", hs_lower)
+    return m.group(1) if m else ""
+
+
+def _compile_rules(rules):
+    """关键词表 → \b 词边界正则（允许复数 s），防止裸子串误伤
+    （cat→furcata/flycatcher、pig→pigeon、cow→Moscow、air→Cairo/Cairina、
+    water→shearwater，09-19 审计）"""
+    return [([re.compile(r'\b' + re.escape(kw) + r's?\b') for kw in kws], cat)
+            for kws, cat in rules]
+
+
+ENGLISH_RULES_C = _compile_rules(ENGLISH_RULES)
+
+
+def is_garbage_species(host_species: str) -> bool:
+    hs = (host_species or "").lower().strip()
+    return hs.startswith(GARBAGE_SPECIES_PREFIX) or hs in GARBAGE_SPECIES_EXACT
 
 
 def infer_host_category(host_species: str, strain_name: str) -> str:
@@ -88,11 +119,14 @@ def infer_host_category(host_species: str, strain_name: str) -> str:
     # 快速路径：已知非流感物种
     if "synthetic" in hs_lower:
         return "unknown"
+    # 垃圾 species：提取内嵌株名再推断（提取不到则仅靠 strain_name）
+    if is_garbage_species(host_species):
+        hs_lower = _extract_embedded_strain(hs_lower)
 
-    # 1. 英文关键词匹配
-    for keywords, category in ENGLISH_RULES:
-        for kw in keywords:
-            if kw in hs_lower:
+    # 1. 英文关键词匹配（\b 词边界）
+    for patterns, category in ENGLISH_RULES_C:
+        for pat in patterns:
+            if pat.search(hs_lower):
                 return category
 
     # 2. 科学属名匹配（检查完整词边界）
@@ -158,13 +192,17 @@ def clean_subtype(subtype: str):
                 stats["synthetic"] += 1
                 continue
 
-            # 5. 改进 host_category 推断
+            # 5. 改进 host_category 推断（09-19 审计后规则）：
+            #    improve-only——新推断非 unknown 且与旧值不同才覆盖；
+            #    唯一例外是垃圾 species 行允许降级为 unknown
+            #   （raw 旧值由下载期裸子串 bug 产生，不可信）
             old_hc = row.get("host_category", "")
             host_species = row.get("host_species") or ""
             strain_name = row.get("strain_name") or ""
 
             new_hc = infer_host_category(host_species, strain_name)
-            if old_hc == "unknown" and new_hc != "unknown":
+            if new_hc != old_hc and (new_hc != "unknown"
+                                     or is_garbage_species(host_species)):
                 stats["host_improved"] += 1
                 row["host_category"] = new_hc
                 row["is_human"] = "1" if new_hc == "human" else "0"

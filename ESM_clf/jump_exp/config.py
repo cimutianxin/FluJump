@@ -5,6 +5,8 @@ from pathlib import Path
 # ── 数据 ──
 DATA_CSV = Path("data/processed_isolate_MAFFT/all_isolates_aligned.csv")
 SPLIT_CSV = Path("data/splits/isolate_split.csv")
+# H5/H7 内部 5:5 val/test 切分（target-val 层选择协议，build_h5h7_valtest_splits.py 生成）
+H5H7_SPLIT_DIR = Path("data/splits/h5h7_valtest")
 
 # ── ESM-2 150M (embedding dim=640) ──
 ESM_MODEL = "facebook/esm2_t30_150M_UR50D"

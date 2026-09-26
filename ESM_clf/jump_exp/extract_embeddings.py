@@ -18,6 +18,14 @@ df = pd.read_csv(DATA_CSV)
 print(f"总 isolates: {len(df)}")
 print(f"  subtype 分布: {df['subtype'].value_counts().to_dict()}")
 
+# 防呆（2026-08-02）：embedding 按 DATA_CSV 行序存储，下游全部按行对齐。
+# 若 DATA_CSV 被重建导致行数/行序变化，直接重跑会生成与 split/labels 错位的 npy。
+# 此处强制校验行序与 isolate_split.csv 逐行一致。
+_sp = pd.read_csv(SPLIT_CSV, dtype=str)
+assert len(df) == len(_sp), f"DATA_CSV 行数 {len(df)} != split 行数 {len(_sp)}"
+assert (df["accession"].values == _sp["accession"].values).all(), "DATA_CSV 行序与 split 不一致"
+assert (df["subtype"].values == _sp["subtype"].values).all(), "DATA_CSV subtype 行序与 split 不一致"
+
 seqs = df["ha_sequence"].tolist()
 
 # ── 加载 ESM-2 150M (EsmModel, 无 LM head) ──

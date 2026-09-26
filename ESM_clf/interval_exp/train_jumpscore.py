@@ -2,53 +2,26 @@
 
 对每个 (embedding × hidden_dims × MSE权重) 训练 JumpScorer，
 用 pairwise MarginRankingLoss 优化秩排序，输出 eval_jumpscore.json。
+
+2026-08-01：数据加载改为共享 loader（accession 对齐版），
+消除 split / embedding 位置错位 bug。
 """
 
 import numpy as np
-import pandas as pd
 import json
 import sys
 import torch
 
 sys.path.insert(0, ".")
 from ESM_clf.interval_exp.config import *
+from ESM_clf.interval_exp.interval_data import load_interval_data
 from ESM_clf.interval_exp.jumpscore_model import train_jumpscore, evaluate_jumpscore
 from sklearn.preprocessing import StandardScaler
 
 
 def load_data():
-    df = pd.read_csv(DATA_CSV)
-    split_df = pd.read_csv(SPLIT_CSV)
-    df["split"] = split_df["split"]
-
-    mask = (
-        df["subtype"].isin(SUBTYPES)
-        & (df["label_is_jump"] == 1)
-        & (df["jump_interval_cat"].notna())
-        & (df["jump_interval_cat"] != "")
-    )
-
-    split_arr = df.loc[mask, "split"].values
-    subtypes_arr = df.loc[mask, "subtype"].values
-    idx = df[mask].index.values
-
-    y_reg = np.load(OUT_DIR / "labels_interval_days.npy")
-    valid_mask = ~np.isnan(y_reg)
-    print(f"  移除 NaN: {valid_mask.sum()} / {len(y_reg)}")
-    y_reg = y_reg[valid_mask]
-    split_arr = split_arr[valid_mask]
-    subtypes_arr = subtypes_arr[valid_mask]
-
-    emb = {}
-    for etype in EMB_TYPES:
-        path = EMB_DIR / f"esm_emb_150M_{etype}.npy"
-        if path.exists():
-            emb[etype] = np.load(path)[idx][valid_mask]
-        else:
-            emb[etype] = None
-
-    masks = {s: (split_arr == s) for s in ["train", "val", "test"]}
-    return masks, subtypes_arr, emb, y_reg
+    data = load_interval_data(verbose=True)
+    return data["masks"], data["subtypes"], data["X"], data["y_days"]
 
 
 def main():
