@@ -54,3 +54,7 @@ jump H5 +0.016 / jump H7 +0.001 / **jump_human H5 +0.112** / jump_human H7 +0.01
 - 新建 `data/splits/h5h7_valtest/`（10 个切分 CSV）
 - 修改 `ESM_clf/jump_exp/config.py`（+H5H7_SPLIT_DIR）、`data/README.md`、`datascripts/README.md`
 - 输出 `ESM_clf/jump_exp/output/target_val_layer_select.{json,log}`
+
+## 追加（09-27）：09-19 标签修复后重跑版本
+
+09-19 host 标签修复（7 簇 jump 1→0、jump_human 0 翻转，见 `09-19-16_feline_host_audit.md`）后本脚本被重跑（JSON mtime 09-19 13:49），磁盘 `target_val_layer_select.json` 为修复后版本，本 .md/.log 仍为 08-09 原版：jump H7 **0.918±0.023**（L17×5；seed42 bootstrap 0.9205 [0.834, 0.957] P(>0.5)=1.00）、jump H5 **0.836±0.018**（选层稳定为 L28×5）；jump_human 两格数值不变（0.854±0.060、P=1.00 等）。RESULT.md §1/§3/§4 已于 09-27 统一刷新为修复后数值。协议审计（确认原始口径、全程无符号翻转）：`09-27-01_h7_flip_protocol_audit.md`。

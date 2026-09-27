@@ -9,7 +9,7 @@
 - 打分：query 与 **H1+H3 train split 人源参考集**（3,476 条）的最大 pairwise identity（`max_id_human`）、top-5 均值（`topk_id_human`）、人源−非人源差值（`diff_id`，非人源参考 2,457 条）。参考集禁用 H5/H7 人源序列（人源身份是 jump_human 标签定义成分，防泄漏）。
 - identity 在 MAFFT 对齐序列（H3 参考株统一坐标，长度 1039）上按双非 gap 位匹配比例计算，numpy 分块向量化（194s）。
 - 评估：test / h5_holdout / h7_holdout × label_is_jump × label_is_jump_human，cluster 级 bootstrap（1000 次）CI 与 P(AUC>0.5)。
-- 参照值：ESM-2 linear probe H5 0.79（L3）；H7 翻转后 0.892/0.854（target-val 选层）。
+- 参照值：ESM-2 linear probe H5 0.79（L3）；H7 target-val 选层 0.892/0.854（**原始口径、无符号翻转**——中层 L17/L13 在 H7 上原始方向即为正；09-19 标签修复后重跑为 0.918/0.854，协议审计见 `09-27-01_h7_flip_protocol_audit.md`）。
 
 ## 结果
 

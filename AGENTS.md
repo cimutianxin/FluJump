@@ -17,7 +17,7 @@ FluJump 是一个科研项目：基于流感病毒 HA（血凝素）蛋白序列
 - **Baseline**：Borkenhagen 2024 CNN（one-hot 序列 + CNN，两阶段训练）
 - **评估指标**：AUC、ACC（还有 F1 等）；核心设定是 **H1+H3 训练 → H5/H7 holdout 亚型外推迁移**
 
-**核心结论（截至 2026-09）**：ESM-2 L3 层 embedding 在 H5 迁移上优于 CNN（jump AUC ~0.79 vs 0.46；jump_human H5 格 CNN 修正后 0.72 不落下风，需并置）；同等选择预算对齐后 CNN 四格无一达到 ESM 水平（09-12）；H7 存在方向反转（原始 AUC < 0.5，用 `-logits` 翻转后 0.72–0.90），失效边界 = H7/H10 亚支（09-11 H10 复现 + H4 对照）；raw 序列是主方案，MAFFT 对齐序列为补充。
+**核心结论（截至 2026-09）**：ESM-2 L3 层 embedding 在 H5 迁移上优于 CNN（jump AUC ~0.79 vs 0.46；jump_human H5 格 CNN 修正后 0.72 不落下风，需并置）；同等选择预算对齐后 CNN 四格无一达到 ESM 水平（09-12）；H7 存在方向反转（晚层原始 AUC < 0.5；`-logits` 翻转后 0.72–0.90 为历史全量诊断口径——target-val headline 数字为原始口径、全程无符号翻转，中层 L17/L13 在 H7 本不反转，协议审计见 `notes/09-27-01_h7_flip_protocol_audit.md`），失效边界 = H7/H10 亚支（09-11 H10 复现 + H4 对照）；raw 序列是主方案，MAFFT 对齐序列为补充。
 
 ---
 

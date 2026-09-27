@@ -44,3 +44,7 @@
 
 - 新建 `reviewer_exp/scale_replication/`（config / extract_all_layers / run_scale_select）
 - 输出 `reviewer_exp/scale_replication/output/`（esm_emb_{650m,3b}_all_layers.npy、scale_{650m,3b}_{select,sweep}.json、extract.log、scale_select.log）
+
+## 追加（09-27）：09-19 标签修复后重跑版本
+
+09-19 host 标签修复后本实验被重跑（select/sweep JSON mtime 09-19 13:53/14:11）。修复后 cluster 臂 H7：650M jump **0.548±0.091**（L5×5，seed42 bootstrap P(>0.5)=0.82）、3B jump **0.624±0.056**（L2×4/L1×1，P=0.96）；jump_human 两格不变（0.645±0.039 / 0.629±0.028，P=0.91/0.90）；150M 修复后数值见 `08-09-00_target_val_layer_select.md` 追加节。选层结论两版本一致（L5/L3/L2 稳定）；末层 sweep 原始 AUC（修复后）：650M L33 0.149/0.212、3B L36 0.294/0.275。RESULT.md §4 表已于 09-27 刷新为修复后数值（协议审计 `09-27-01_h7_flip_protocol_audit.md`）。

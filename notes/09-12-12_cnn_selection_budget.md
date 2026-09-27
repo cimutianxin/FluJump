@@ -45,3 +45,7 @@ cluster 臂 test AUC（5 seeds，mean±std）：
 
 - §1 待补项完成：CNN 在同等选择预算下仍全面（4 格中 3 格显著）低于 ESM probe，"选层自由度"替代解释排除
 - 下一步：更新 RESULT.md §1（勾掉待补、修正 CNN 数值、如实记录 jump_human H5 格）与 AGENTS.md 踩坑（sigmoid 饱和条目扩展到 CNN 侧）
+
+## 追加（09-27）：09-19 标签修复后重跑版本
+
+09-19 host 标签修复后 `probe_target_val.py` 被重跑（JSON mtime 09-19 13:30）。修复后 cluster 臂（CNN 选择后 vs ESM 同协议）：jump H5 0.346±0.076 vs 0.836±0.018、jump H7 0.645±0.119 vs 0.918±0.023；jump_human 两格不变（0.609±0.186 vs 0.688±0.103；0.721±0.057 vs 0.854±0.060）。选中频率：H7 两格仍以 dense_stage1 为主（jump 4/5、jump_human 3/5），"jump 微调破坏 H7 可迁移信号"等原结论不变。RESULT.md §1 已于 09-27 刷新为修复后数值（协议审计 `09-27-01_h7_flip_protocol_audit.md`）。
