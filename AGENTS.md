@@ -142,7 +142,7 @@ FluJump/
 
 ### 4.3 重要注意事项（踩坑记录）
 
-- **H7 方向反转**：H7 holdout 上模型预测方向与训练方向相反（原始 AUC ~0.1–0.28）。翻转 AUC 必须用 `decision_function` 的 `-logits` 计算，不能用 `1-p`（H7 预测概率极端集中在 0 附近，`1-p` 数值不稳定）。**同类坑（09-12 扩展）**：一切 AUC/排序评估都必须用 raw logits——CNN 侧 `evaluate.py`/`eval_h5h7_valtest.py` 曾用 float32 sigmoid 概率算 AUC，|logit|>88 时饱和退化为并列秩（jump_human H5 被低估为 0.549/0.597，logit 真值 0.702/0.723）；两脚本已于 09-12 改为 logit 口径并重跑。
+- **H7 方向反转**：H7 holdout 上模型预测方向与训练方向相反（原始 AUC ~0.1–0.28）。翻转 AUC 必须用 `decision_function` 的 `-logits` 计算，不能用 `1-p`（H7 预测概率极端集中在 0 附近，`1-p` 数值不稳定）。**同类坑（09-12 扩展）**：一切 AUC/排序评估都必须用 raw logits——CNN 侧 `evaluate.py`/`eval_h5h7_valtest.py` 曾用 float32 sigmoid 概率算 AUC，大幅值 logit 下 float32 sigmoid 饱和为精确 0/1（CNN logit 幅度达 ±170；正侧 ≳17 舍入为 1.0、负侧 ≲−89 exp 上溢得 0）退化为并列秩（jump_human H5 被低估为 0.549/0.597，logit 真值 0.702/0.723）；两脚本已于 09-12 改为 logit 口径并重跑。
 - **ESM-2 用 raw 序列**（无 gap）提取 embedding 与预训练分布一致，是主方案；对齐序列中的 gap token（id=30）需在 mean pooling 时排除，且会拖累 H5 迁移。
 - **L3 层（倒数第三层）** embedding 在跨亚型迁移上一致优于 L1（最后一层）。
 - interval 标签：2026-08-01 起固定为 4 类（`human_first` / `<1yr` / `1-3yr` / `3yr+`），由 interval_exp/interval_data.py 从 clean CSV 重算**未 clamp** 的有符号天数派生（`iso_interval_days` 列本身已在 build_isolate_dataset.py 中被 clamp，负值信息需重算恢复）。2026-08-10 新增 3 类变体 `y_cat3`（human_first 并入 `<1yr`）。

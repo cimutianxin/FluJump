@@ -11,7 +11,7 @@
 
 ## 意外发现：float32 sigmoid 饱和低估了历史 CNN AUC
 
-行序校验时发现 stage2 jump_human logit 复算全量 H5 AUC=0.702，与 `eval_h5h7_valtest.json` 的 0.549 不符。根因：CNN logit 幅度达 ±170，float32 sigmoid 在 |logit|>88 饱和为 0/1，并列秩把 AUC 拉向 0.5（与 AGENTS.md 既有"H7 翻转必须用 -logits 不能用 1-p"同类）。已修复 `evaluate.py` 与 `eval_h5h7_valtest.py`（AUC 用 raw logits，阈值指标用 logit≥0）并重跑：
+行序校验时发现 stage2 jump_human logit 复算全量 H5 AUC=0.702，与 `eval_h5h7_valtest.json` 的 0.549 不符。根因：CNN logit 幅度达 ±170，float32 sigmoid 在大幅值 logit 下饱和为精确 0/1（正侧 x≳17 时 1+e^{−x} 舍入为 1.0；负侧 x≲−89 时 exp 上溢得 0）（09-28 校订："|logit|>88" 仅为 float32 exp 上溢界，原表述不精确），并列秩把 AUC 拉向 0.5（与 AGENTS.md 既有"H7 翻转必须用 -logits 不能用 1-p"同类）。已修复 `evaluate.py` 与 `eval_h5h7_valtest.py`（AUC 用 raw logits，阈值指标用 logit≥0）并重跑：
 
 | 口径 | jump H5 | jump H7 | jump_human H5 | jump_human H7 |
 |---|---|---|---|---|

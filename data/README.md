@@ -84,8 +84,8 @@ CD-HIT 参数: 99% identity, `-s 0.8 -g 1 -n 5`
 | `serotype` | H1N1/H1N2/... |
 | `first_{host}_ym` | 各宿主最早检出时间 (YYYY-MM) |
 | `host_categories` | cluster 内出现的宿主列表 |
-| `label_is_jump` | 任意 ≥2 宿主 (75, 3.2%) |
-| `jump_interval_cat` | 所有宿主最早→最晚时间跨度（07-12 修复，非方向性）: `<1yr`(47)/`1-3yr`(20)/`3-5yr`(6)/`5yr+`(2) |
+| `label_is_jump` | 任意 ≥2 宿主 (68, 2.9%；09-19 host 审计后口径，旧记录 75/3.2% 系审计前) |
+| `jump_interval_cat` | 所有宿主最早→最晚时间跨度（07-12 修复，非方向性）: `<1yr`(43)/`1-3yr`(18)/`3-5yr`(5)/`5yr+`(2)（09-19 审计后） |
 | `label_is_jump_human` | 含 human + ≥1 动物 (48, 2.0%) |
 | `jump_interval_human_cat` | 同上，允许 negative |
 | `label_jump_source` | 来源宿主: avian/swine/bovine |
