@@ -48,7 +48,7 @@
 **确定结果**：
 - 现象（历史全量 holdout 诊断口径）：晚层（末层/倒数第三层）probe 在全量 H7 holdout 上原始 AUC 0.1–0.28（方向相反），`-logits` 翻转后 0.72–0.90——**方向经全量 holdout 事后判定**，仅作现象描述，非 headline 口径（`ESM_clf/jump_exp/train_probe_compare.py`，`output/compare_raw_vs_aligned_*.json`）
 - **Headline（target-val 合规协议：原始口径、全程无符号翻转，符号不是协议自由度）**：H7 内部 cluster 5:5 切分（5 seeds），val 原始 AUC argmax 选层 → test 只评一次——jump→L17 **0.918±0.023**、jump_human→L13 **0.854±0.060**（cluster 臂 mean±std）；选中层在 H7 上原始方向即为正（val AUC 0.80–0.95），反转仅见于晚层参照层（L26/L28 原始 0.20–0.49）；cluster_seed42 test bootstrap P(>0.5) **1.00/1.00**（90% CI [0.834, 0.957] / [0.814, 0.961]）。数值为 09-19 host 标签修复后重跑版（修复前 0.892±0.027/P=0.97 与 0.854±0.060/P=1.00；jump_human 不受修复影响）（`ESM_clf/jump_exp/target_val_layer_select.py`，日志 `notes/08-09-00_target_val_layer_select.md`，协议与版本审计 `notes/09-27-01_h7_flip_protocol_audit.md`）
-- 几何根因：H7 整个亚型（无论正负）落在 w 负半空间深处（proj(+) −5.1 / proj(−) −3.3），且 H7 阳性比阴性更负；PC1（46.2% 方差）按亚型分离——亚型身份主导 embedding 几何（`analyze_geometry.py`，日志 `notes/08-01-19_h7_geometry_rootcause.md`）
+- 几何根因：H7 整个亚型（无论正负）落在 w 负半空间深处（proj(+) −5.1 / proj(−) −3.3），且 H7 阳性比阴性更负；PC1（46.2% 方差）按亚型分离——亚型身份主导 embedding 几何（`analyze_geometry.py`，日志 `notes/08-01-19_h7_geometry_rootcause.md`）。**10-04 校订**：该 json 为 09-19 标签修复前口径；修复后重导（`figdata/fig4_boundary/panelb_geometry_meta.json`，单位 w 口径）为 proj(+) **−5.16** / proj(−) **−3.28**、PC1 46.20%，论文数值按修复后口径（−5.2/−3.3）
 - H7 阳性 cluster 构成：7 个阳性 cluster 全部为 2013–2015 H7N9 暴发事件及同期谱系（H7N9 案例研究素材）
 - 翻转 AUC 必须用 decision_function 的 `-logits`，不能用 `1-p`（H7 概率极端集中，数值不稳定）；**该翻转口径仅适用于诊断/历史全量评估——target-val headline 无任何翻转步骤**（见上条与审计笔记）
 
@@ -82,7 +82,7 @@
 
 - 翻转的载体是**亚型内 ± gap** w·(μ_ST+−μ_ST−)，而非亚型整体 offset（AUC 平移不变 ⇒ offset 不驱动排序）：gap 随深度变号（150M mid(13–22) 正 → late(28–30) 负）且与 H7 AUC 逐层强相关——ρ(gap_H7, AUC_H7) = 0.896/0.837（150M，p≤4e-9）、0.634/0.652（650M）、0.680/0.791（3B），三规模同构
 - **"最优深度前移"的机制**：gap 变号边界随规模前移（150M 21–26 → 650M 3–6 → 3B 1–5），target-val 最优层 = 变号前正 gap 窗口内的最深点（650M/3B 精确重合 L5/L3/L2；150M L17/L13 在变号点之前的正窗口）
-- train 解随深度**近正交旋转**：cos(w_best, w_last) ≈ 0（三规模 |cos|≤0.02，最大为 3B jump 0.0183，10-03 校订；150M 5-seed 稳定 cos=1.0000）——非"同一方向反号"而是"解空间旋转"
+- train 解随深度**近正交旋转**：cos(w_best, w_last) ≈ 0（三规模真末层口径 |cos|≤0.05：150M L30 主拟合 +0.048/+0.043、5-seed abs_max 0.048（`figdata/fig5_depth/cos_w_best_w_last.json`，10-04 导出）；650M −0.001/+0.010（末层 33）、3B +0.018/+0.014（末层 36）；**口径注意**：notes/09-26-16 记的 −0.005/+0.015 是 cos(w_best, w_28)，非真末层——10-04 起统一真末层口径；150M best 层 5-seed 稳定 cos=1.0000）——非"同一方向反号"而是"解空间旋转"
 - H5↔H7 反相关的几何本质：两亚型 gap 剖面逐层反相，ρ(gap_H5, gap_H7) = −0.70/−0.77（150M）——深度翻转与 H5/H7 trade-off 是同一几何事实的两个侧面
 - 残差流分解（G2）：末层 gap 负贡献由中层段（13–22）写入并携带（jump −11.9/总−12.1；jump_human −20.0/总−21.6）
 - 位点（G3）与注意力（G4）层面均无随深度的重分配（置换 p≥0.18）——信号保持弥漫分布式，翻转是"同一批分布式特征的读出方向旋转"，不是"换了读哪些位点"；交叉读出（G6）显示表示旋转与读出旋转同量级复合
