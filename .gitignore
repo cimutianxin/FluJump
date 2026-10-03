@@ -46,6 +46,3 @@ Thumbs.db
 *.ckpt
 *.h5
 *.safetensors
-
-# 渲染位图（结构 PNG 走带外传输，不入 git）
-figdata/*/assets/
