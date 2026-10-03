@@ -17,6 +17,24 @@ transformer 头见 `ESM_tf_clf/output/tf_probe_results.json`，本目录为 MLP 
 
 ## 文件说明
 
+### panela_cells.csv / panela_summary.csv（10-04 本地组装）
+
+panel (a) 三方法 × 四格数据：ESM-2 linear probe / CNN (budget-matched) / Naive identity
+的逐 seed 与汇总（mean±std 为 population SD，与 caption 一致；naive 为确定性值 +
+bootstrap CI95）；含 CNN stage-2 logit 头（jump_human H5 格对照）。本地自
+target_val_layer_select.json / probe_target_val.json / eval_h5h7_valtest.json /
+naive_baseline_results.json 重打包（figs/fig2_transfer/prepare_figdata.py，带断言校验）。
+
+### panelb_capacity.csv（10-04 本地组装）
+
+panel (b) 容量阶梯：Linear/MLP/Transformer/LoRA × 四格的 transfer_auc（mean±population SD）
+与 within_dist_auc（H1+H3 test；MLP/tf 按选层加权，LoRA 为单次运行）。
+
+### panelb_shuffled.csv（10-04 本地组装）
+
+control task（Hewitt–Liang）逐 shuffle × 层：fit_train_auc（打乱标签拟合上限）与
+真实标签 holdout AUC；panel (b) 灰杠 = linear 上限 0.830 / transformer 上限 0.557。
+
 ### mlp_head_summary.csv（20 行，cluster 臂长表）
 
 | 列 | 含义 |
