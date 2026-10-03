@@ -13,6 +13,7 @@ emb_2026_L3.npy），阈值全部来自 ≤2025 train logits（risk_scorer 内�
 
 import json
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,7 @@ ALIGNED_2026_CSV = "data/processed_isolate_MAFFT/2026_isolates_aligned.csv"
 RANKING_CSV = OUT_DIR / "forward_2026_ranking.csv"
 GAP = ord("-")
 TIER_ORD = {"低": 0, "中": 1, "高": 2}
+FIG6_DIR = Path("figdata/fig6_surveillance")   # fig6 train logit 分布导出
 
 
 def encode(seqs):
@@ -114,6 +116,22 @@ def main():
     naive_thr = {l: {"high": float(np.median(naive_tr[y_tr[l] == 1])),
                      "mid": float(np.quantile(naive_tr[y_tr[l] == 0], 0.95))}
                  for l in LABEL_COLS}
+
+    # ── figdata 导出：2026 协议 train logit 分布（fig6_surveillance）──
+    # 复用 scorer 内重训的 probe（risk_scorer 不改）；logit = raw decision_function
+    FIG6_DIR.mkdir(parents=True, exist_ok=True)
+    X_l3 = np.load("ESM_clf/jump_exp/output/esm_emb_150M_L3.npy").astype(np.float32)
+    assert len(X_l3) == len(df), "embedding 行数与 split 表不一致"
+    for l in LABEL_COLS:
+        tag = l.replace("label_is_", "")
+        scl, clf = scorer.probes[l]
+        lg_tr = clf.decision_function(scl.transform(X_l3[tr]))
+        pd.DataFrame({"accession": df.loc[tr, "accession"].to_numpy(),
+                      "train_label": y_tr[l],
+                      "logit": lg_tr}).to_csv(
+            FIG6_DIR / f"train_logits_2026_{tag}.csv", index=False)
+        print(f"figdata 导出: train_logits_2026_{tag}.csv（{int(tr.sum())} 行）",
+              flush=True)
     for l in LABEL_COLS:
         t = naive_thr[l]
         s26[f"naive_tier_{l.replace('label_is_', '')}"] = [

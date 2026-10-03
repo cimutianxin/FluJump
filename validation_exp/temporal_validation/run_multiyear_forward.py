@@ -22,6 +22,7 @@
 
 import json
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -41,6 +42,7 @@ YEARS = [2024, 2025]
 LAYERS = {"L3": MEAN_EMB_L3, "L1": MEAN_EMB_L1}   # L1=末层（对照），L3=主线层
 GAP = ord("-")
 TIER_ORD = {"低": 0, "中": 1, "高": 2}
+FIG6_DIR = Path("figdata/fig6_surveillance")   # fig6 train logit 分布导出
 
 
 # ── 工具函数（与 run_2026_forward*.py 同实现）──
@@ -271,6 +273,16 @@ def main():
                 # ── 分层命中（仅 L3 主线层；阈值仅 ≤cutoff train 定）──
                 if lname == "L3":
                     lg_tr = clf.decision_function(scaler.transform(X[tr_idx]))
+                    # ── figdata 导出：train logit 分布（fig6_surveillance，
+                    #    只加导出不改逻辑；train_label = ≤cutoff 重算的训练标签）──
+                    tag = label.replace("label_is_", "")
+                    FIG6_DIR.mkdir(parents=True, exist_ok=True)
+                    pd.DataFrame({
+                        "accession": df["accession"].to_numpy()[tr_idx],
+                        "train_label": y_tr,
+                        "logit": lg_tr,
+                    }).to_csv(FIG6_DIR / f"train_logits_{Y}_{tag}.csv",
+                              index=False)
                     thr = {"high": float(np.median(lg_tr[y_tr == 1])),
                            "mid": float(np.quantile(lg_tr[y_tr == 0], 0.95))}
                     tiers = ["高" if v >= thr["high"] else
@@ -279,7 +291,6 @@ def main():
                     lg_tr_sorted = np.sort(lg_tr)
                     trainpct = np.searchsorted(lg_tr_sorted, logits) / len(lg_tr)
                     tm = tier_metrics(tiers, y_ev)
-                    tag = label.replace("label_is_", "")
                     yres["tiers"][tag] = {
                         "thresholds": thr,
                         "threshold_degenerate": bool(thr["high"] < thr["mid"]),
