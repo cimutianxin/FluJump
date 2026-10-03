@@ -20,4 +20,4 @@
 | `fig5_depth/` | 150M cos(w_best, w_last)（target-val best 层 vs L30，主拟合 + 5 seed） | `validation_exp/depth_reversal/export_cos_w_150m.py` |
 | `fig6_surveillance/` | 2024/2025/2026 三协议 train logit 分布（6 个 CSV） | `validation_exp/temporal_validation/run_multiyear_forward.py`、`run_2026_workflow_eval.py` |
 
-注：`fig4_boundary/assets/` 下的渲染 PNG 被 `.gitignore` 忽略（带外传输，不入 git）。
+注：`fig4_boundary/assets/` 下的渲染 PNG 按上方例外规则正常 commit（v1: panele_1hgg_{side,top}.png；v2: panele_1hgg_{side,top}_v2.png）。
