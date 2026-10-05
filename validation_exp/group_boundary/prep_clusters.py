@@ -37,7 +37,8 @@ ENGLISH_RULES = [
     (["homo sapiens", "human", "homo", "patient"], "human"),
     (["chicken", "duck", "goose", "quail", "turkey", "mallard",
       "pheasant", "pigeon", "poultry", "wild bird", "teal",
-      "gull", "shorebird", "swan", "fowl"], "avian"),
+      "gull", "shorebird", "swan", "fowl",
+      "waterbird", "waterfowl", "bluebird", "flycatcher", "guineafowl"], "avian"),
     (["swine", "pig", "porcine", "hog"], "swine"),
     (["equine", "horse"], "equine"),
     (["canine", "dog"], "canine"),
@@ -56,7 +57,8 @@ GENUS_RULES = [
       "larus", "sterna", "charadrius", "calidris", "tringa", "arenaria",
       "phalacrocorax", "ardea", "egretta", "pelecanus", "phoenicopterus",
       "accipiter", "buteo", "falco", "aquila", "struthio", "passer",
-      "taeniopygia", "corvus", "pica", "sturnus", "turdus"], "avian"),
+      "taeniopygia", "corvus", "pica", "sturnus", "turdus", "tyto",
+      "cairina"], "avian"),
     (["sus", "porcus"], "swine"),
     (["homo"], "human"),
     (["canis", "lupus"], "canine"),
@@ -74,17 +76,42 @@ STRAIN_HOST_PATTERNS = [
     (r"/swine/|/pig/|/porcine/", "swine"),
     (r"/duck/|/chicken/|/goose/|/quail/|/turkey/|/mallard/|/pheasant/"
      r"|/pigeon/|/poultry/|/teal/|/gull/|/shorebird/|/swan/|/fowl/"
-     r"|/anas /|/calidris /|/avian/", "avian"),
+     r"|/anas /|/calidris /|/avian/|/bluebird/", "avian"),
     (r"/human/|/homo /|/patient/", "human"),
     (r"/canine/|/dog/", "canine"),
     (r"/equine/|/horse/", "equine"),
     (r"/bovine/|/cattle/|/cow/", "bovine"),
-    (r"/feline/|/cat/", "feline"),
+    (r"/feline/|/cats?/", "feline"),
     (r"/mink/|/ferret/", "mustelid"),
     (r"/seal/|/whale/|/marine/", "marine_mammal"),
     (r"/bat/|/mouse/|/rodent/", "other_mammal"),
     (r"/environment/|/water/|/sewage/|/air/", "environmental"),
 ]
+
+# host_species 垃圾值与词边界匹配（09-19 审计口径，同 datascripts/clean_data.py）：
+# 裸子串 cat/pig/cow/air/water 曾误伤 furcata/flycatcher/pigeon/Moscow/shearwater
+GARBAGE_SPECIES_PREFIX = "influenza a virus"
+GARBAGE_SPECIES_EXACT = {"environment", "environmental"}
+
+
+def _extract_embedded_strain(hs_lower: str) -> str:
+    """从串位 host_species 提取内嵌株名 "(A/mallard duck/PA/...)" → 'a/mallard duck/...'"""
+    m = re.search(r"\((a/[^)]+)\)", hs_lower)
+    return m.group(1) if m else ""
+
+
+def _compile_rules(rules):
+    """关键词表 → \b 词边界正则（允许复数 s），防止裸子串误伤"""
+    return [([re.compile(r'\b' + re.escape(kw) + r's?\b') for kw in kws], cat)
+            for kws, cat in rules]
+
+
+ENGLISH_RULES_C = _compile_rules(ENGLISH_RULES)
+
+
+def is_garbage_species(host_species: str) -> bool:
+    hs = (host_species or "").lower().strip()
+    return hs.startswith(GARBAGE_SPECIES_PREFIX) or hs in GARBAGE_SPECIES_EXACT
 
 
 def infer_host_category(host_species, strain_name):
@@ -93,9 +120,12 @@ def infer_host_category(host_species, strain_name):
     hs_lower = host_species.lower()
     if "synthetic" in hs_lower:
         return "unknown"
-    for keywords, category in ENGLISH_RULES:
-        for kw in keywords:
-            if kw in hs_lower:
+    # 垃圾 species：提取内嵌株名再推断（提取不到则仅靠 strain_name）
+    if is_garbage_species(host_species):
+        hs_lower = _extract_embedded_strain(hs_lower)
+    for patterns, category in ENGLISH_RULES_C:
+        for pat in patterns:
+            if pat.search(hs_lower):
                 return category
     for genera, category in GENUS_RULES:
         for genus in genera:
@@ -147,9 +177,13 @@ def clean_subtype(subtype):
                 stats["synthetic"] += 1
                 continue
             old_hc = row.get("host_category", "")
-            new_hc = infer_host_category(row.get("host_species") or "",
-                                         row.get("strain_name") or "")
-            if old_hc == "unknown" and new_hc != "unknown":
+            host_species = row.get("host_species") or ""
+            strain_name = row.get("strain_name") or ""
+            # improve-only：新推断非 unknown 且与旧值不同才覆盖；
+            # 唯一例外是垃圾 species 行允许降级为 unknown（09-19 口径）
+            new_hc = infer_host_category(host_species, strain_name)
+            if new_hc != old_hc and (new_hc != "unknown"
+                                     or is_garbage_species(host_species)):
                 stats["host_improved"] += 1
                 row["host_category"] = new_hc
                 row["is_human"] = "1" if new_hc == "human" else "0"

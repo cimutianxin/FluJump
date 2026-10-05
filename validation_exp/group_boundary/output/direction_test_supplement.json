@@ -1,29 +1,29 @@
 {
   "sign_test": {
     "H10": {
-      "n_layers_below_0.5": 24,
+      "n_layers_below_0.5": 20,
       "n_layers": 31,
-      "p_two_sided": 0.003326892852783203
+      "p_two_sided": 0.14961278438568115
     },
     "H4": {
-      "n_layers_below_0.5": 3,
+      "n_layers_below_0.5": 6,
       "n_layers": 31,
-      "p_two_sided": 4.649162292480469e-06
+      "p_two_sided": 0.0008779102936387062
     }
   },
   "mammalian_subset": {
     "label_is_jump": {
       "17": {
-        "n_pos_clusters_mammal": 4,
-        "cluster_auc": 0.5827922077922079,
-        "cluster_auc_flipped": 0.4172077922077922,
-        "ref_all_pos_cluster_auc": 0.4635364635364636
+        "n_pos_clusters_mammal": 3,
+        "cluster_auc": 0.6967741935483872,
+        "cluster_auc_flipped": 0.30322580645161284,
+        "ref_all_pos_cluster_auc": 0.45953079178885625
       },
       "28": {
-        "n_pos_clusters_mammal": 4,
-        "cluster_auc": 0.4569805194805195,
-        "cluster_auc_flipped": 0.5430194805194806,
-        "ref_all_pos_cluster_auc": 0.468031968031968
+        "n_pos_clusters_mammal": 3,
+        "cluster_auc": 0.3311827956989247,
+        "cluster_auc_flipped": 0.6688172043010753,
+        "ref_all_pos_cluster_auc": 0.4627565982404693
       }
     },
     "label_is_jump_human": {

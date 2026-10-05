@@ -15,6 +15,8 @@
   （由 g1 decomp 重建，复算 ρ(gap_H5,gap_H7)=−0.702/−0.773 与存储一致）、
   participation ratio、AA 身份解码 margin/acc（V1）。
 - `summary_metrics.json`：caption 全部 headline 数值（ρ、变号边界、cos、PR/margin 最小值）。
+- `h5_layer_scan.csv`（10-06，S7）：三规模 × 双标签 H5 逐层 holdout AUC 单列导出
+  （列 scale, label, layer, rel_depth, h5_auc），自 `panela_per_layer_auc.csv` 提取，供 Fig 5 备选面板/补充材料。
 - `cos_w_best_w_last.json`：10-03 导出的 150M 真末层（L30）口径 cos（本目录既有文件，
   prepare 只读不改）；650M/3B 的 cos 取自 g5 的 `cos_w_bestlayer_w_last`。
 

@@ -1,0 +1,7 @@
+cluster_id,subtype,cluster_size,serotype,host_categories,year_min,year_max,first_human_ym,label_is_jump,label_is_jump_human
+H15_0,H15,9,H15N9,avian,1978,1983,,0,0
+H15_1,H15,9,H15N5,avian,2010,2015,,0,0
+H15_2,H15,1,H15N4,avian,2008,2008,,0,0
+H15_3,H15,1,H15N8,avian,1983,1983,,0,0
+H15_4,H15,1,H15N6,unknown,1979,1979,,0,0
+H15_5,H15,1,H9N2,avian,2011,2011,,0,0

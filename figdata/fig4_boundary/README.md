@@ -7,10 +7,12 @@
   的线性映射，由 meta 的 8 个校验均值解出（max|残差|<2e-6）。caption 的 −5.2/−3.3 与
   "negative half-space" 以变换后/原始 logit 两个口径分别核对（H7 负半空间比例 0.994）。
 - `panelc_profiles.csv`：H10/H4 × 双标签 × 31 层逐层 isolate/cluster AUC
-  （方向检验；符号检验口径 = jump 的 cluster_auc，已复算核对 24/31、3/31）。
+  （方向检验；符号检验口径 = jump 的 cluster_auc，已复算核对 **20/31、6/31**——
+  10-06 起为 09-19 词边界修复后标签口径，修复前为 24/31、3/31）。
 - `panelc_preregistered.csv`：预注册层结果（jump 17/28；jump_human 13/28；含 bootstrap
   CI 与 P(AUC>0.5)）。H4 无 jump_human 阳性簇，其 jump_human cluster AUC 未定义（全 null）。
-- `panelc_signtest_rank.json`：符号检验计数/p、人源 H10N8 簇（H10_197，江西 2013）
+- `panelc_signtest_rank.json`：符号检验计数/p（10-06 修复后口径：H10 20/31 p=0.150、
+  H4 6/31 p=8.8e-4）、人源 H10N8 簇（H10_197，江西 2013）
   rank 313→9/321（jump_human L13 翻转）、H10/H4 评估规模。
 - `paneld_columns.csv`：逐位点驱动散点（jump L28 格，与结构图同格；region/共享核心标记
   来自 structure_colors.csv，d_pos 与 g3 输出逐列一致）。

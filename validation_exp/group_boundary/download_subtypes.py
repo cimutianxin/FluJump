@@ -33,11 +33,14 @@ FIELD_NAMES = [
 MONTH_MAP = {m.lower(): i for i, m in enumerate(calendar.month_abbr) if i > 0}
 
 # 与 download_flu.py 一致的 host_category 推断（顺序重要）
+# 09-19：匹配改为 \b 词边界（允许复数 s），防止裸子串误伤
+# （cat→furcata/flycatcher/oyster catcher、pig→pigeon、cow→Moscow 等）
 HOST_RULES = [
     (["homo sapiens", "human", "homo", "patient"], "human"),
     (["chicken", "duck", "goose", "quail", "turkey", "mallard",
       "pheasant", "pigeon", "poultry", "wild bird", "teal",
-      "gull", "shorebird", "swan", "fowl", "avian"], "avian"),
+      "gull", "shorebird", "swan", "fowl", "avian",
+      "waterbird", "waterfowl", "bluebird", "flycatcher", "guineafowl"], "avian"),
     (["swine", "pig", "porcine", "hog"], "swine"),
     (["equine", "horse"], "equine"),
     (["canine", "dog"], "canine"),
@@ -48,6 +51,9 @@ HOST_RULES = [
     (["mouse", "bat", "rodent"], "other_mammal"),
     (["environment", "water", "air", "sewage"], "environmental"),
 ]
+
+_HOST_RULES_C = [([re.compile(r'\b' + re.escape(kw) + r's?\b') for kw in kws], cat)
+                 for kws, cat in HOST_RULES]
 
 
 def parse_collection_date(raw):
@@ -81,9 +87,9 @@ def infer_host_category(host_species):
     if not host_species:
         return "unknown"
     hs = host_species.lower()
-    for keywords, category in HOST_RULES:
-        for kw in keywords:
-            if kw in hs:
+    for patterns, category in _HOST_RULES_C:
+        for pat in patterns:
+            if pat.search(hs):
                 return category
     return "unknown"
 

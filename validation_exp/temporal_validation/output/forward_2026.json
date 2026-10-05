@@ -39,10 +39,16 @@
   },
   "naive": {
     "label_is_jump": {
-      "auc_2026": 0.0461
+      "auc_2026": 0.0461,
+      "auc_2026_cluster_naive": 0.4643,
+      "n_clusters": 65,
+      "n_pos_clusters": 2
     },
     "label_is_jump_human": {
-      "auc_2026": 0.0461
+      "auc_2026": 0.0461,
+      "auc_2026_cluster_naive": 0.4643,
+      "n_clusters": 65,
+      "n_pos_clusters": 2
     }
   },
   "cnn": {

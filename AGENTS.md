@@ -110,9 +110,9 @@ FluJump/
     ├── scale_replication/          # ESM-2 650M/3B 多规模复现（层方向翻转的普适性 + target-val 选择）
     ├── naive_baseline/             # 朴素生物学基线（与 H1+H3 train 人源株的全局序列相似度排序，H5/H7 同协议对比 probe）
     ├── site_attribution/           # 位点归因（列↔canonical H3 编号映射经 1HGG 验证：canonical=原始−16；logit 逐位点分解 + ISM 饱和突变）
-    ├── group_boundary/             # H7/H10 亚支边界零样本检验（H10 复现反转方向 24/31 层 p=0.003、H4 对照不反转；自包含 H10/H4 下载+聚类+全层 probe 打分）
+    ├── group_boundary/             # H7/H10 亚支边界零样本检验（H10 复现反转方向；10-06 S5 词边界标签重跑后 20/31 层 p=0.150 n.s. + jump_human L13 显著，H4 对照 6/31 不反转；S6 增补 H15/H14：post-2000 无阳性簇不可检验；自包含 H10/H4/H15/H14 下载+聚类+全层 probe 打分，host 标签已按 09-19 词边界口径修复）
     ├── reversal_sites/             # H7 vs H10 反转驱动位点对比（d_pos 推负剖面 6/6 格 ρ 0.63–0.72 > H4/H5 对照；共享位点不落 RBS；g1 主数据剖面 / g2 H10H4 贡献提取 / g3 重叠+结构映射 / g4 正交检验：否定 clade 指纹解读，机制开放）
-    ├── depth_reversal/             # 深度方向翻转机制解释（C9：翻转载体=亚型内 ± gap 随深度变号，ρ(gap,AUC)=0.63–0.90 三规模同构；gap 变号边界随规模前移=最优深度前移机制；解近正交旋转 cos(w_best,w_last)≈0；G1 层几何 / G2 残差流（负贡献中层段写入）/ G3 残基×层（null）/ G4 注意力（null）/ G5 规模普适 / G6 交叉读出双旋转分解；V1 AA 身份解码（margin/PR U 形，最优层≈压缩最低点）/ V2 典型性耦合翻号（H5/H7 镜像）/ A1 谱系决定最优深度 6/6 格）
+    ├── depth_reversal/             # 深度方向翻转机制解释（C9：翻转载体=亚型内 ± gap 随深度变号，ρ(gap,AUC)=0.63–0.90 三规模同构；gap 变号边界随规模前移=最优深度前移机制；解近正交旋转 cos(w_best,w_last)≈0；G1 层几何 / G2 残差流（负贡献中层段写入）/ G3 残基×层（null）/ G4 注意力（null）/ G5 规模普适 / G6 交叉读出双旋转分解；V1 AA 身份解码（margin/PR U 形，最优层≈压缩最低点——10-06 S2 扩展到 650M/3B：判据不跨规模，PR 最小点 rd 0.45/0.36 深于最优层、ρ(PR,gap) 符号翻转，保持 150M 限定）/ V2 典型性耦合翻号（H5/H7 镜像）/ A1 谱系决定最优深度 6/6 格）
     └── temporal_validation/        # 时间维度验证（2026 前向外推：probe AUC 0.9995、阳性全进 top 11/201、朴素基线 0.046 反向；H7N9 回溯阴性：失败特异于 H7/Group 2，同亚型跨时间对照 0.787；前向加固 run_2026_forward_hardening.py：cluster bootstrap CI/permutation p/≤2025 标签口径/L1 对照层；run_2026_workflow_eval.py：单株分层前瞻验证，中界 8/10 命中零误报、高层因分布漂移不触发；run_multiyear_forward.py：多年份前向复现 2024/2025，训练标签按 ≤cutoff 簇成员重算防未来信息泄漏）
 └── jev_exp/                        # JEV 判别器实验（新建 2026-09-26：自包含、不改现有 workflow 任何代码，用 jev 作分类器与主线 probe 对比；算法细节待定）
 ```
@@ -150,7 +150,7 @@ FluJump/
 - **跨文件 join 必须按 (accession, subtype)**：同一 accession 可在多个亚型下重复出现（260+ 个），且 `all_isolates_clean.csv`/`all_isolates_aligned.csv` 与 `isolate_split.csv`/embedding 行序不一致。embedding 行序与 `isolate_split.csv` 行序逐行一致，严禁按 CSV 行号位置对齐（interval_exp 一律走 `interval_data.load_interval_data()`）。
 - **canonical H3 编号 ≠ 原始序列位置**：差 16（信号肽不入编号；HA2 从原始 346 起单独编号）。对齐列 ↔ canonical 编号映射已固化在 `validation_exp/site_attribution/output/col_to_h3.json`（经 PDB 1HGG/X-31 验证：canonical 226 = 原始 242 = L）。
 - **跑 ESM 相关脚本须加 `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1`**：模型在本地缓存，但 transformers 5.x 默认先连 HF Hub，网络不通时无报错挂起（进程 poll 在 443 端口）。
-- **host_category 推断必须词边界匹配**（09-19 审计）：裸子串 `cat`/`pig`/`cow`/`air`/`water` 曾误伤 furcata/flycatcher/pigeon/Moscow/Cairo/shearwater（H10_143 假阳性簇来源）；`clean_data.py`/`download_flu.py`/`supplement_h5.py` 现为 `\b` 词边界 + 垃圾 species（"Influenza A virus (A/...)" 串位）内嵌株名提取 + improve-only 覆盖。簇键一律 (subtype, cluster_id)——cluster_id 是亚型内编号，跨亚型复用率 76%。
+- **host_category 推断必须词边界匹配**（09-19 审计）：裸子串 `cat`/`pig`/`cow`/`air`/`water` 曾误伤 furcata/flycatcher/pigeon/Moscow/Cairo/shearwater（H10_143 假阳性簇来源 = "oyster catcher" 裸子串 cat）；`clean_data.py`/`download_flu.py`/`supplement_h5.py` 现为 `\b` 词边界 + 垃圾 species（"Influenza A virus (A/...)" 串位）内嵌株名提取 + improve-only 覆盖；`validation_exp/group_boundary/` 的 `download_subtypes.py`/`prep_clusters.py` 已于 10-06 同步同口径（H10/H4 标签重跑见 S5 日志）。簇键一律 (subtype, cluster_id)——cluster_id 是亚型内编号，跨亚型复用率 76%。
 
 ---
 
