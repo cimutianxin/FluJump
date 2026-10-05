@@ -163,3 +163,16 @@
 
 **C. 未来工作（当前档位不进本文）**
 9. [x] ~~**（升档关键③）深度方向翻转的机制解释**（残基层级分析 / 注意力归因）~~ **已完成（09-26）**：见 §4"机制解释"小节——翻转载体 = 亚型内 ± gap 随深度变号（ρ(gap,AUC)=0.63–0.90 三规模同构），gap 变号边界随规模前移解释"最优深度前移"，train 解近正交旋转（cos(w_best,w_last)≈0）；残差流：负贡献中层段写入并携带；位点/注意力无重分配（信号弥漫分布式）。"亚型身份全层贯穿、方向随深度翻转"的 08-01-22 开放问题已回答。`validation_exp/depth_reversal`（G1–G6 自包含，未改任何现有 workflow），日志 `notes/09-26-16_depth_reversal_mechanism.md`。
+
+---
+
+## 审稿配套实验处置记录（10-06）：未采纳进正文的潜在弱点
+
+> 10-06 审稿配套补充实验（S1–S7，任务文件 `notes/10-06-03-服务器补充实验任务_S1-S7.md`）中，**已采纳进论文**：S3（2026 朴素基线 cluster 口径 0.464 补全三年）、S5（H10/H4 标签修复后口径，§3.3 全文切换）、S6（H15/H14 改"不可检验"表述）。以下四条**暂不采纳正文修改**，在此集中备查；理由均为：显著负面或防御型补充或需改图，且不改变主结论。
+>
+> **仓库发布决定（10-06）**：最终公开代码仓库将剥离 `notes/` 与本文件，仅保留代码、数据与输出；届时审稿人可见的敏感性信息以 `output/` 与各脚本为准。若被问到，应答口径以本节为准（诚实作答，区间式表述）。
+
+- **S4 GroupKFold 超参 CV 敏感性（潜在弱点）**：训练侧选 ridge C 的 CV 由 isolate 级 StratifiedKFold 改 cluster 级 GroupKFold(5) 后，选中 C 在 jump 19/31、jump_human 23/31 层改变；四格中三格稳定（jump H5 0.836→0.799±0.066、jump H7 0.918→0.919±0.026、jump_human H5 0.688→0.681±0.133，|Δ|≤0.036），**jump_human H7 0.854±0.060→0.668±0.086**（选层 L13 漂为 L14/L22，仍在中层正窗口内；仍高于随机与 VirHostPRED 0.321，但对 CNN 0.721 由占优变为相当）。性质：训练侧模型选择方差，非评估泄漏；该格为全文功效最弱格（7 阳性簇、单一 H7N9 事件，Limitations xi 已披露）。应答口径：训练 isolate 级/评估 cluster 级系刻意设计（各配其问）、内部 CV 看不见跨亚型部署目标、C 为二阶旋钮、无泄漏路径；不争论 CV 优劣。（脚本 `ESM_clf/jump_exp/groupkfold_cv_sensitivity.py`，日志 `notes/10-06-03_groupkfold_cv_sensitivity.md`）
+- **S1 8 层候选池对照（潜在弱点）**：probe 候选层限 8 层后 headline 依赖池组成——A 池 {0,4,9,13,17,22,26,30} 下 jump H5 塌至 0.622±0.059（该格 31 层时 5/5 选 L28，A 池无 L28），B 池 {0,4,8,12,16,20,24,30} 四格全掉；即"同等选择预算"结论对"候选池含获胜层"敏感。正文已把 "equal representation-selection budget" 改为 "the same number of selection decisions" 降级表述，不再展开。（日志 `notes/10-06-04_8layer_budget.md`）
+- **S2 多规模 PR/margin（防御型补充）**：label-free 判据（PR 最小≈最优层）不跨规模——650M PR 最小 L15（rd 0.45）vs 最优 L5/L3、3B PR 最小 L13（rd 0.36）vs 最优 L1/L2，ρ(PR, gap_H7) 在 650M/3B 符号翻转。正文 §3.4 与 Fig 5d 已限定 150M，不再加"不跨规模"的展开句；跨规模仍成立的是"最优层跟踪 gap 变号边界"。（`v1_aa_identity_decode_scale.py`，日志 `notes/10-06-04_v1_scale_pr_margin.md`）
+- **S7 三规模 H5 逐层曲线（需改图）**：数据已导出 `figdata/fig5_depth/h5_layer_scan.csv`（150M/650M/3B × 双标签逐层 H5 AUC），因需新增 Fig 5 面板或补充图，暂不进正文；留作补充材料候选。
