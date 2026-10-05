@@ -7,14 +7,14 @@
   "h7_frac_negative_halfspace": 0.9940334128878282,
   "sign_test": {
     "H10": {
-      "n_layers_below_0.5": 24,
+      "n_layers_below_0.5": 20,
       "n_layers": 31,
-      "p_two_sided": 0.003326892852783203
+      "p_two_sided": 0.14961278438568115
     },
     "H4": {
-      "n_layers_below_0.5": 3,
+      "n_layers_below_0.5": 6,
       "n_layers": 31,
-      "p_two_sided": 4.649162292480469e-06
+      "p_two_sided": 0.0008779102936387062
     }
   },
   "h10n8_rank": {
@@ -27,16 +27,16 @@
     "n_clusters": 321
   },
   "h10_prereg_cluster_auc_jump_L17_L28": [
-    0.4635364635364636,
-    0.468031968031968
+    0.4595307917888562,
+    0.4627565982404693
   ],
   "rho_h7_h10_range": [
-    0.632,
-    0.7184
+    0.6311,
+    0.7183
   ],
   "rho_h4_range": [
-    0.3693,
-    0.4206
+    0.3678,
+    0.4198
   ],
   "rho_h5_range": [
     0.1625,
@@ -44,7 +44,7 @@
   ],
   "jaccard_h10_range": [
     0.176,
-    0.379
+    0.333
   ],
   "js_percentile_range": [
     52.8,

@@ -32,14 +32,15 @@ from validation_exp.reversal_sites.config import (
 BATCH_SIZE = 8
 MAXLEN = 576          # HA 最长 ~570 + 冗余
 
-# 回归校验基准：group_boundary/direction_test.json（09-11，修复前标签）。
-# 09-19 host 修复移除了 7 簇假阳性（全在 H5/H7 holdout），允许 ±0.06 容差。
+# 回归校验基准：group_boundary/direction_test.json regression_check
+# （10-06 S5 重跑口径：主数据 09-19 词边界修复后标签；jump_human 格不受修复影响，
+# 数值与 09-11 一致）。容差 ±0.06 覆盖重训数值噪声。
 REPRO_REF = {   # (layer_idx, label) -> (h5_ref, h7_ref)
-    (28, "label_is_jump"): (0.7980, 0.2823),
+    (28, "label_is_jump"): (0.8255, 0.2764),
     (28, "label_is_jump_human"): (0.7936, 0.2059),
-    (17, "label_is_jump"): (0.3918, 0.8937),
+    (17, "label_is_jump"): (0.3665, 0.9246),
     (17, "label_is_jump_human"): (0.2646, 0.6277),
-    (13, "label_is_jump"): (0.2483, 0.7571),
+    (13, "label_is_jump"): (0.2331, 0.7941),
     (13, "label_is_jump_human"): (0.2523, 0.8632),
 }
 REPRO_TOL = 0.06

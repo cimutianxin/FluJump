@@ -35,11 +35,12 @@ RESIDUE_EMB = {ln: f"ESM_tf_clf/output/residue_emb_{ln}.npy" for ln in LAYER_IDX
 MAIN_GROUPS = ["H1H3", "H5", "H7"]
 TOPK = 20
 
-# 回归校验基准（同 G2）：group_boundary 同层 AUC，容差含 09-19 标签修复位移
+# 回归校验基准（同 G2）：group_boundary/direction_test.json regression_check
+# （10-06 S5 重跑口径，主数据 09-19 修复后标签）；容差 ±0.06
 REPRO_REF = {
-    (17, "label_is_jump"): (0.3918, 0.8937),
+    (17, "label_is_jump"): (0.3665, 0.9246),
     (17, "label_is_jump_human"): (0.2646, 0.6277),
-    (13, "label_is_jump"): (0.2483, 0.7571),
+    (13, "label_is_jump"): (0.2331, 0.7941),
     (13, "label_is_jump_human"): (0.2523, 0.8632),
 }
 REPRO_TOL = 0.06

@@ -22,23 +22,23 @@ color deepblue, RBS
 set stick_radius, 0.35, RBS
 
 # ── 共享核心列（白→红渐变，sticks + CA spheres）──
-alter (chain A+C+E) and resi 7, b=445.5542
-alter (chain A+C+E) and resi 8, b=-221.0883
-alter (chain A+C+E) and resi 9, b=322.0693
-alter (chain A+C+E) and resi 20, b=179.9114
-alter (chain A+C+E) and resi 21, b=-197.6523
-alter (chain A+C+E) and resi 23, b=657.6839
-alter (chain A+C+E) and resi 93, b=556.8374
-alter (chain A+C+E) and resi 116, b=822.0990
-alter (chain A+C+E) and resi 117, b=929.1083
-alter (chain A+C+E) and resi 124, b=843.7792
-alter (chain A+C+E) and resi 129, b=874.2702
-alter (chain A+C+E) and resi 196, b=780.8159
-alter (chain A+C+E) and resi 263, b=675.8529
-alter (chain A+C+E) and resi 282, b=476.8379
-alter (chain A+C+E) and resi 285, b=695.4111
-alter (chain A+C+E) and resi 312, b=373.0761
-alter (chain B+D+F) and resi 83, b=434.9416
+alter (chain A+C+E) and resi 7, b=445.4301
+alter (chain A+C+E) and resi 8, b=-220.9725
+alter (chain A+C+E) and resi 9, b=325.1551
+alter (chain A+C+E) and resi 20, b=180.4125
+alter (chain A+C+E) and resi 21, b=-197.2007
+alter (chain A+C+E) and resi 23, b=658.4346
+alter (chain A+C+E) and resi 93, b=556.5577
+alter (chain A+C+E) and resi 116, b=822.3290
+alter (chain A+C+E) and resi 117, b=929.4715
+alter (chain A+C+E) and resi 124, b=843.8376
+alter (chain A+C+E) and resi 129, b=874.1136
+alter (chain A+C+E) and resi 196, b=780.9492
+alter (chain A+C+E) and resi 263, b=676.1779
+alter (chain A+C+E) and resi 282, b=476.9202
+alter (chain A+C+E) and resi 285, b=695.7790
+alter (chain A+C+E) and resi 312, b=371.7668
+alter (chain B+D+F) and resi 83, b=434.8267
 select CORE, (chain A+C+E) and (resi 7+8+9+20+21+23+93+116+117+124+129+196+263+282+285+312) or (chain B+D+F) and (resi 83)
 show sticks, CORE
 show spheres, CORE and name CA
